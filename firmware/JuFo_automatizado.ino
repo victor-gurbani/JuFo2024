@@ -1,8 +1,13 @@
 #include <SoftwareSerial.h>
 // #include <Servo.h> // uses Timer1
-#include"ServoTimer2.h"
+#include "ServoTimer2.h"
 #include <math.h>
-
+// Jan 11 2024 start
+// TODO better data transfer
+// light
+// light sensor
+// will mark new lines with +
+// Store data to transfer all together, max size 32 KB, program uses 11KB
 
 // Uart interface sometiemes not working
 SoftwareSerial SerialCom(13, 12);  // RX, TX
@@ -25,10 +30,10 @@ bool VentanaState[TotalVentanas] = { false, false, false, false };
  * }
  */
 
- 
+
 ServoTimer2 myservo;  // create servo object to control a servo
 
-bool motorAllowed = true;    // variable to read the value from the analog pin
+bool motorAllowed = true;  // variable to read the value from the analog pin
 int current_angle = 42;
 unsigned long last_used;
 
@@ -37,7 +42,7 @@ float interval = 0.2;
 
 int co2;
 
-int threshold = 100; // in %
+int threshold = 100;  // in %
 
 /*
    * 8.05 - 8.18 EMPIEZA COLE
@@ -61,8 +66,24 @@ int ppmhora[9] = { 900, 800, 600, 850, 800, 600, 800 };
 //dummy button  abrir con motor
 //slider threshold +-10%
 char SerialChar;
-int ControlInt; // multi-purpose int to read from serial
+int ControlInt;                                // multi-purpose int to read from serial
 bool AllowedSource[3] = { true, true, true };  // analog, PWM, Uart
+
+// START NEW CODE
+//freepins 8  11
+//usedpins 0 1 2 3 4 5 6 9 10 12 13 A0
+const int TotalLights = 2;  // ejemplo con ia de que si aprende que una nunc se enciende )(tmb como input se puede usar "otras leds encendidas")
+int LightPin[TotalLights] = { 3, 6 };
+bool LightState[TotalLights] = { false, false };
+
+const int TotalLightSensors = 2;  // ejemplo con ia de que si aprende que una nunc se enciende )(tmb como input se puede usar "otras leds encendidas")
+int LightSensorPin[TotalLightSensors] = { A1, A2 };
+float LightSensorState[TotalLightSensors] = {};
+
+bool lightAllowed = true;  // variable to read the value from the analog pin
+
+
+
 void setup() {
   Serial.begin(9600);  // esta cambiado !!!
   Serial.println("Machine Initialised");
@@ -83,14 +104,32 @@ void setup() {
   for (int i = 0; i < TotalVentanas; i++) {
     pinMode(VentanaPin[i], INPUT_PULLUP);
   }
-  
+
   SerialCom.begin(9600);
   // Serial.begin(9600);
   pinMode(pwmPin, INPUT_PULLUP);
 
+  // START NEW CODE
+  for (int i = 0; i < TotalLights; i++) {
+    pinMode(LightPin[i], OUTPUT);
+    digitalWrite(LightPin[i], HIGH);
+  }
+  for (int i = 0; i < TotalLightSensors; i++) {
+    pinMode(LightSensorPin[i], INPUT);
+  }
+  // TEST IF WORKS
+  delay(500);
+  for (int i = 0; i < TotalLights; i++) {
+    digitalWrite(LightPin[i], LOW);
+  }
+  delay(1000);
+  digitalWrite(LightPin[0], analogRead(LightSensorPin[0]) > 0.5 ? LOW : HIGH);
+  delay(1000);
+  digitalWrite(LightPin[0], analogRead(LightSensorPin[0]) > 0.5 ? LOW : HIGH);
+  // END NEW CODE
+
   //delay(180000); // preheat the CO2 sensor for 3 minutes
   delay(1000);
-  
 }
 
 
@@ -104,6 +143,12 @@ void loop() {
   for (int i = 0; i < TotalVentanas; i++) {
     VentanaState[i] = digitalRead(VentanaPin[i]);
   }
+
+  // START NEW CODE
+  for (int i = 0; i < TotalLightSensors; i++) {
+    LightSensorState[i] = analogRead(LightSensorPin[i]);
+  }
+  // END NEW CODE
   //  Serial.print(VentanaState[0]);
   //  Serial.println("<-- Ventana 1");
   //  Serial.print(VentanaState[1]);
@@ -111,7 +156,7 @@ void loop() {
   //  Serial.print(VentanaState[2]);
   //  Serial.println("<-- Ventana 3");
   //
-  
+
   if (AllowedSource[2]) {
     //  Serial.println("reading uart...");
     ppm_uart = gas_concentration_uart();
@@ -148,11 +193,11 @@ void loop() {
     }
   }
 
-  // automatic opening  
- // Serial.println(TotalVentanas / 2);
+  // automatic opening
+  // Serial.println(TotalVentanas / 2);
   int main_ppm = (ppm_PWM != 0) ? ppm_PWM : ppm_uart;
 
-  if (main_ppm > /*ppmhora[hora]*/ 1000 * threshold / 100) { // cambiar entre (desde app) 80% y 120% (40-60*2)
+  if (main_ppm > /*ppmhora[hora]*/ 1000 * threshold / 100) {  // cambiar entre (desde app) 80% y 120% (40-60*2)
     //Serial.println(current_angle);
     if (number_of_closed >= TotalVentanas / 2 && millis() - last_used > 3000 && current_angle != 1200) {
       SerialJSON("Open Windows");
@@ -166,8 +211,8 @@ void loop() {
       }
       //abrir ventanas
     }
-  }else{
-    if (/*number_of_closed < TotalVentanas / 2 && */millis() - last_used > 3000 && current_angle != 1750) {
+  } else {
+    if (/*number_of_closed < TotalVentanas / 2 && */ millis() - last_used > 3000 && current_angle != 1750) {
       SerialJSON("Close Windows");
       if (motorAllowed) {
         for (current_angle = 1200; current_angle < 1750; current_angle += 1) {
@@ -177,11 +222,26 @@ void loop() {
         //current_angle = 0;
         last_used = millis();
       }
-      
     }
-
   }
 
+  // START NEW CODE
+  if(lightAllowed) {
+    int tempSum = 0;
+
+    // Sum up all the values in the array
+    for (int i = 0; i < TotalLightSensors; i++) {
+      tempSum += LightSensorState[i];
+    }
+    // STATIC cast convierte como (float)var
+    float average = static_cast<float>(sum) / TotalLightSensors;
+    
+    for (int i = 0; i < TotalLights; i++) {
+      digitalWrite(LightPin[i], average < 0.5 ? HIGH : LOW);
+    }
+  }
+  // auto change lights based on light sensor
+  // END NEW CODE
   delay(interval * 1000);
   /*
    * 
@@ -189,6 +249,7 @@ void loop() {
    *  a = analog
    *  p = PWM
    *  u = UART
+   *  l = lights as JSON array{[]}
    * s = set
    *  a = analog
    *  p = PWM
@@ -199,6 +260,10 @@ void loop() {
    * m = set motor
    *   1 = ON (use)
    *   0 = OFF (do not use)
+   * l = set light
+   *  n = lightPin
+   *   1 = ON
+   *   0 = OFF
    * a = allowed sources
    * t = threshold
    *  [1-99] = number (suggested max 40-60%) // 50 is normal
@@ -231,6 +296,8 @@ void loop() {
             Serial.println(ppm_PWM);
           } else if (SerialChar == 'u') {
             Serial.println(ppm_uart);
+          } else if (SerialChar == 'l') {
+            Serial.println("{ " + toJSON(LightSensorState, TotalLightSensors) + " }");
           } else {
             Serial.println("ERROR (Code: 2)");
           }
@@ -255,7 +322,7 @@ void loop() {
             AllowedSource[1] = ControlInt;
           } else if (SerialChar == 'u') {
             AllowedSource[2] = ControlInt;
-          } else if (SerialChar == 'm'){
+          } else if (SerialChar == 'm') {
             motorAllowed = ControlInt;
           } else {
             Serial.println("ERROR (Code: 2)");
@@ -267,39 +334,59 @@ void loop() {
         }
         break;
       case 'm':  // use servo/motor 1 open:
-//      if (Serial.available()) {
-//           ControlInt = Serial.read() - 48;
-//           ControlInt = (bool)ControlInt;
-//           Serial.println(ControlInt);
-//           motorAllowed = ControlInt;
-//           Serial.println("OK");
-//         } else {
-//           Serial.println("ERROR (Code: 1)");
-//         }
+                 //      if (Serial.available()) {
+                 //           ControlInt = Serial.read() - 48;
+                 //           ControlInt = (bool)ControlInt;
+                 //           Serial.println(ControlInt);
+                 //           motorAllowed = ControlInt;
+                 //           Serial.println("OK");
+                 //         } else {
+                 //           Serial.println("ERROR (Code: 1)");
+                 //         }
         if (Serial.available()) {
-             ControlInt = Serial.read() - 48;
-             ControlInt = (bool)ControlInt;
-             // Serial.println(ControlInt);
-             if (ControlInt) {
-               if (current_angle != 1200) {
-                for (current_angle = 1750; current_angle > 1200; current_angle -= 1) {
-                  myservo.write(current_angle);
-                  delay(2);
-                }
-               }
-             }else {
-              if (current_angle != 1750) {
-                for (current_angle = 1200; current_angle < 1750; current_angle += 1) {
-                  myservo.write(current_angle);
-                  delay(2);
-                }
+          ControlInt = Serial.read() - 48;
+          ControlInt = (bool)ControlInt;
+          // Serial.println(ControlInt);
+          if (ControlInt) {
+            if (current_angle != 1200) {
+              for (current_angle = 1750; current_angle > 1200; current_angle -= 1) {
+                myservo.write(current_angle);
+                delay(2);
               }
-             }
-             last_used = millis();
-             SerialJSON("OK");
-           } else {
-             Serial.println("ERROR (Code: 1)");
-           }
+            }
+          } else {
+            if (current_angle != 1750) {
+              for (current_angle = 1200; current_angle < 1750; current_angle += 1) {
+                myservo.write(current_angle);
+                delay(2);
+              }
+            }
+          }
+          last_used = millis();
+          SerialJSON("OK");
+        } else {
+          Serial.println("ERROR (Code: 1)");
+        }
+        break;
+      case 'l':
+        if (Serial.available()) {
+          int ChosenLight = (int)Serial.read();
+          if (Serial.available()) {
+            ControlInt = Serial.read() - 48;
+            ControlInt = (bool)ControlInt;
+            // Serial.println(ControlInt);
+            if(ChosenLight < TotalLights) {
+              digitalWrite(ChosenLight, ControlInt ? HIGH : LOW);            
+            } else {
+              Serial.println("ERROR (Code: 2)");
+            }
+            SerialJSON("OK");
+          } else {
+            Serial.println("ERROR (Code: 1)");
+          }
+        } else {
+          Serial.println("ERROR (Code: 1)");
+        }
         break;
       case 'a':
         Serial.print("Analog ");
@@ -310,25 +397,24 @@ void loop() {
         Serial.println(AllowedSource[2]);
         break;
       case 't':  // threshold between 40-60% (d = default)
-        if (!Serial.available()){
+        if (!Serial.available()) {
           Serial.println("ERROR (Code: 1)");
-        }else{
+        } else {
           SerialChar = Serial.read();
           if (SerialChar == 'd') {
-              threshold = 100; // in %
+            threshold = 100;  // in %
           } else {
             int n1 = (int)(SerialChar - 48);
             int n2;
-            if (Serial.available()){
-              SerialChar = Serial.read(); //warning NL and CR (ASCII 10,13)
+            if (Serial.available()) {
+              SerialChar = Serial.read();  //warning NL and CR (ASCII 10,13)
               n2 = (int)(SerialChar - 48);
-            }else{
+            } else {
               Serial.println("ERROR (Code: 1)");
               break;
             }
-            
-            threshold = (n1 * 10 + n2) * 2; // los numeros son * 2 pq 50 son 100
-            
+
+            threshold = (n1 * 10 + n2) * 2;  // los numeros son * 2 pq 50 son 100
           }
         }
         //Serial.println(threshold);
@@ -336,8 +422,10 @@ void loop() {
       case 'w':
         if (Serial.available())
           ControlInt = (int)Serial.read();
-        else
+        else {
           Serial.println("ERROR (Code: 1)");
+          break;
+        }
         if (ControlInt <= TotalVentanas)
           Serial.println(VentanaState[ControlInt]);
         else
@@ -358,21 +446,30 @@ void loop() {
 }
 
 void SerialJSON(String message) {
-  String concatV; //necessary outside the switch and in this function
-  concatV = "[";
-  for (int i = 0; i < sizeof(VentanaState)-1; i++) {
-    concatV += String(VentanaState[i]) + ",";
-  }
-  concatV += String(VentanaState[sizeof(VentanaState)-1]);
-  concatV += "]";
-  Serial.println("{\"ppm_a\": " + String(ppm_analog) + ",\"ppm_u\": " + String(ppm_uart) + ",\"ppm_p\": " + String(ppm_PWM) + ",\"windows\": " + concatV + ",\"threshold\": " + threshold + ",\"servoangle\": " + current_angle + ",\"motorAllowed\": " + motorAllowed + ",\"millis\": " + millis() + ",\"message\": \"" + message + "\"}");
+  String concatV = toJSON(VentanaState);  //necessary outside the switch and in this function
+  String concatL = toJSON(LightState);
+  String concatLS = toJSON(LightSensorState);
+  Serial.println(
+    "{\"ppm_a\": " + String(ppm_analog) 
+  + ",\"ppm_u\": " + String(ppm_uart) 
+  + ",\"ppm_p\": " + String(ppm_PWM) 
+  + ",\"windows\": " + concatV 
+  + ",\"threshold\": " + threshold 
+  + ",\"servoangle\": " + current_angle 
+  + ",\"motorAllowed\": " + motorAllowed 
+  + ",\"millis\": " + millis() 
+  + ",\"lights\": " + concatL
+  + ",\"lightSensors\": " + concatLS
+  + ",\"lightAllowed\": " + lightAllowed 
+  + ",\"message\": \"" + message + "\"}"
+  );
 }
 // gas reading
 
 int gas_concentration_uart() {
   byte addArray[] = { 0xFF, 0x01, 0x86, 0x00, 0x00, 0x00, 0x00, 0x00, 0x79 };
   char dataValue[9];
-  SerialCom.write(addArray, 9); // mueve el servo?!?
+  SerialCom.write(addArray, 9);  // mueve el servo?!?
   SerialCom.readBytes(dataValue, 9);
   int resHigh = (int)dataValue[2];
   int resLow = (int)dataValue[3];
@@ -429,7 +526,17 @@ int gas_concentration_PWM() {
   return int(ppm);
 }
 
-
+// START NEW CODE
+String toJSON(int[] arr, int arrSize) {
+  String JSONresult = "[";
+  for (int i = 0; i < sizeof(arrSize)-1; i++) {
+    JSONresult += String(arr[i]) + ",";
+  }
+  JSONresult += String(arr[sizeof(arr) - 1]);
+  JSONresult += "]";
+  return JSONresult
+}
+// END NEW CODE
 
 
 /* Quellen:
@@ -440,4 +547,4 @@ int gas_concentration_PWM() {
  */
 
 
- // App open window on notification, threshold and everything, fixed PWM inteerface
+// App open window on notification, threshold and everything, fixed PWM inteerface
