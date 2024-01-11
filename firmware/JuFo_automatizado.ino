@@ -72,7 +72,7 @@ bool AllowedSource[3] = { true, true, true };  // analog, PWM, Uart
 // START NEW CODE
 //freepins 8  11
 //usedpins 0 1 2 3 4 5 6 9 10 12 13 A0
-const int TotalLights = 2;  // ejemplo con ia de que si aprende que una nunc se enciende )(tmb como input se puede usar "otras leds encendidas")
+const int TotalLights = 2;  // ejemplo con ia de que si aprende que una nunca se enciende da igual la situación (tmb como input se puede usar "otras leds encendidas")
 int LightPin[TotalLights] = { 3, 6 };
 bool LightState[TotalLights] = { false, false };
 
@@ -82,7 +82,9 @@ float LightSensorState[TotalLightSensors] = {};
 
 bool lightAllowed = true;  // variable to read the value from the analog pin
 
-
+int motionSensorPin = 8;
+int motionSensorState = LOW;
+long int lastMotion = millis();
 
 void setup() {
   Serial.begin(9600);  // esta cambiado !!!
@@ -126,7 +128,9 @@ void setup() {
   digitalWrite(LightPin[0], analogRead(LightSensorPin[0]) > 0.5 ? LOW : HIGH);
   delay(1000);
   digitalWrite(LightPin[0], analogRead(LightSensorPin[0]) > 0.5 ? LOW : HIGH);
-  // END NEW CODE
+
+  pinMode(motionSensorPin, INPUT);
+  
 
   //delay(180000); // preheat the CO2 sensor for 3 minutes
   delay(1000);
@@ -148,6 +152,9 @@ void loop() {
   for (int i = 0; i < TotalLightSensors; i++) {
     LightSensorState[i] = analogRead(LightSensorPin[i]);
   }
+  motionSensorState = digitalRead(motionSensorPin);
+  lastMotion = motionSensorState ? millis() : lastMotion;
+
   // END NEW CODE
   //  Serial.print(VentanaState[0]);
   //  Serial.println("<-- Ventana 1");
@@ -227,17 +234,19 @@ void loop() {
 
   // START NEW CODE
   if(lightAllowed) {
-    int tempSum = 0;
-
-    // Sum up all the values in the array
-    for (int i = 0; i < TotalLightSensors; i++) {
-      tempSum += LightSensorState[i];
+    float illuminationAverage;
+    {  // new scope for variables to get discarded faster
+      int tempSum = 0;
+      // Sum up all the values in the array
+      for (int i = 0; i < TotalLightSensors; i++) {
+        tempSum += LightSensorState[i];
+      }
+      // STATIC cast convierte como (float)var
+      illuminationAverage = static_cast<float>(sum) / TotalLightSensors;
     }
-    // STATIC cast convierte como (float)var
-    float average = static_cast<float>(sum) / TotalLightSensors;
-    
+    // ( millis() - lastMotion < 5000 && illuminationAverage < 0.5 ) // motion in the last 5 seconds and no existing light
     for (int i = 0; i < TotalLights; i++) {
-      digitalWrite(LightPin[i], average < 0.5 ? HIGH : LOW);
+      digitalWrite(LightPin[i], ( millis() - lastMotion < 5000 && illuminationAverage < 0.5 ) ? HIGH : LOW);
     }
   }
   // auto change lights based on light sensor
@@ -250,6 +259,7 @@ void loop() {
    *  p = PWM
    *  u = UART
    *  l = lights as JSON array{[]}
+   *  m = time since last motion in ms
    * s = set
    *  a = analog
    *  p = PWM
@@ -298,6 +308,8 @@ void loop() {
             Serial.println(ppm_uart);
           } else if (SerialChar == 'l') {
             Serial.println("{ " + toJSON(LightSensorState, TotalLightSensors) + " }");
+          } else if (SerialChar == 'm') {
+            Serial.println(millis() - lastMotion);
           } else {
             Serial.println("ERROR (Code: 2)");
           }
@@ -461,6 +473,7 @@ void SerialJSON(String message) {
   + ",\"lights\": " + concatL
   + ",\"lightSensors\": " + concatLS
   + ",\"lightAllowed\": " + lightAllowed 
+  + ",\"lastMotionDelta\": " + (millis() - lastMotion) 
   + ",\"message\": \"" + message + "\"}"
   );
 }
