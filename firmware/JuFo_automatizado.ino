@@ -19,6 +19,8 @@ const int analogPin = A0;
 // PWM interface = can get stuck
 const int pwmPin = 10;
 
+// to check if BT is connected
+// int bluetoothStatePin = 11? // TODO
 const int TotalVentanas = 4;
 int VentanaPin[TotalVentanas] = { 2, 4, 5, 7 };
 //freepins 3 6 8  11
@@ -153,6 +155,12 @@ void loop() {
     LightSensorState[i] = analogRead(LightSensorPin[i]);
   }
   motionSensorState = digitalRead(motionSensorPin);
+  if(motionSensorState && millis() - lastMotion > 20000 /*&& (!digitalRead(bluetoothStatePin))*/) {
+    // saliste de casa y llevas 20 segundos fuera sin movimiento y no hay nadie cerca(conectado)
+    // TODO connect HC05 state pin
+    
+    alertNewPerson(); // envia push a dispositivos y ya verán si hay alguien en casa
+  }
   lastMotion = motionSensorState ? millis() : lastMotion;
 
   // END NEW CODE
@@ -549,6 +557,11 @@ String toJSON(int[] arr, int arrSize) {
   JSONresult += "]";
   return JSONresult
 }
+
+void alertNewPerson() {
+  // TODO
+}
+
 // END NEW CODE
 
 
