@@ -67,7 +67,6 @@ The pulse width timing is accurate to within 1%
 
 
  */
-
 // ensure this library description is only included once
 #ifndef ServoTimer2_h
 #define ServoTimer2_h

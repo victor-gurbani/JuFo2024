@@ -121,6 +121,7 @@ static void initISR()
 	ISRCount = 0;  // clear the value of the ISR counter;
 	
 	/* setup for timer 2 */
+
 	TIMSK2 = 0;  // disable interrupts 
 	TCCR2A = 0;  // normal counting mode 
 	TCCR2B = _BV(CS21); // set prescaler of 8 

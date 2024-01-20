@@ -1,7 +1,32 @@
+
+/* WIFI #include <ESP8266WiFi.h>
+const char* ssid = "";
+const char* pass = "";
+const char* host = "";
+const uint16_t port = 80;
+*/
+/*
+#define A0 54
+#define A1 55
+#define A2 56
+#define A3 57
+#define A4 58
+#define A5 59
+#define A6 60
+#define A7 61
+#define A8 62
+#define A9 63
+#define A10 64
+#define A11 65
+#define A12 66
+#define A13 67
+#define A14 68
+#define A15 69
+*/
 #include <SoftwareSerial.h>
 // #include <Servo.h> // uses Timer1
 #include "ServoTimer2.h"
-#include <math.h>
+//#include <math.h>
 // Jan 11 2024 start
 // TODO better data transfer
 // light
@@ -34,6 +59,7 @@ bool VentanaState[TotalVentanas] = { false, false, false, false };
 
 
 ServoTimer2 myservo;  // create servo object to control a servo
+// Servo myservo;  // create servo object to control a servo
 
 bool motorAllowed = true;  // variable to read the value from the analog pin
 int current_angle = 42;
@@ -80,7 +106,8 @@ bool LightState[TotalLights] = { false, false };
 
 const int TotalLightSensors = 2;  // ejemplo con ia de que si aprende que una nunc se enciende )(tmb como input se puede usar "otras leds encendidas")
 int LightSensorPin[TotalLightSensors] = { A1, A2 };
-float LightSensorState[TotalLightSensors] = {};
+int LightSensorState[TotalLightSensors] = {}; // will have to multiply by 1000 to be albe to precise
+
 
 bool lightAllowed = true;  // variable to read the value from the analog pin
 
@@ -91,6 +118,11 @@ long int lastMotion = millis();
 void setup() {
   Serial.begin(9600);  // esta cambiado !!!
   Serial.println("Machine Initialised");
+  /* WIFI WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, pass);
+  delay(500);
+  Serial.print("WiFi is ");
+  Serial.println(WiFi.status() == WL_CONNECTED); */
   myservo.attach(9);
   last_used = millis();
   for (current_angle = 1750; current_angle > 1200; current_angle -= 1) {
@@ -152,7 +184,7 @@ void loop() {
 
   // START NEW CODE
   for (int i = 0; i < TotalLightSensors; i++) {
-    LightSensorState[i] = analogRead(LightSensorPin[i]);
+    LightSensorState[i] = analogRead(LightSensorPin[i])*1000;
   }
   motionSensorState = digitalRead(motionSensorPin);
   if(motionSensorState && millis() - lastMotion > 20000 /*&& (!digitalRead(bluetoothStatePin))*/) {
@@ -250,7 +282,7 @@ void loop() {
         tempSum += LightSensorState[i];
       }
       // STATIC cast convierte como (float)var
-      illuminationAverage = static_cast<float>(sum) / TotalLightSensors;
+      illuminationAverage = static_cast<float>(tempSum) / TotalLightSensors;
     }
     // ( millis() - lastMotion < 5000 && illuminationAverage < 0.5 ) // motion in the last 5 seconds and no existing light
     for (int i = 0; i < TotalLights; i++) {
@@ -466,9 +498,9 @@ void loop() {
 }
 
 void SerialJSON(String message) {
-  String concatV = toJSON(VentanaState);  //necessary outside the switch and in this function
-  String concatL = toJSON(LightState);
-  String concatLS = toJSON(LightSensorState);
+  String concatV = toJSONbool(VentanaState, TotalVentanas);  //necessary outside the switch and in this function
+  String concatL = toJSONbool(LightState, TotalLights);
+  String concatLS = toJSON(LightSensorState, TotalLightSensors);
   Serial.println(
     "{\"ppm_a\": " + String(ppm_analog) 
   + ",\"ppm_u\": " + String(ppm_uart) 
@@ -548,18 +580,45 @@ int gas_concentration_PWM() {
 }
 
 // START NEW CODE
-String toJSON(int[] arr, int arrSize) {
+String toJSON(int arr[], int arrSize) {
   String JSONresult = "[";
-  for (int i = 0; i < sizeof(arrSize)-1; i++) {
+  for (int i = 0; i < arrSize-1; i++) {
     JSONresult += String(arr[i]) + ",";
   }
-  JSONresult += String(arr[sizeof(arr) - 1]);
+  JSONresult += String(arr[arrSize - 1]);
   JSONresult += "]";
-  return JSONresult
+  return JSONresult;
+}
+
+String toJSONbool(bool arr[], int arrSize) {
+  String JSONresult = "[";
+  for (int i = 0; i < arrSize-1; i++) {
+    JSONresult += String(arr[i]) + ",";
+  }
+  JSONresult += String(arr[arrSize - 1]);
+  JSONresult += "]";
+  return JSONresult;
 }
 
 void alertNewPerson() {
-  // TODO
+  HTTPClient http;
+  
+  http.begin(webhookURL);
+  http.addHeader("Content-Type", "application/json");
+
+  String payload = "{\"username\": \"test\", \"content\": \"hello\"}";
+  
+  int httpResponseCode = http.POST(payload);
+  
+  if (httpResponseCode > 0) {
+    Serial.print("Webhook message sent. Response code: ");
+    Serial.println(httpResponseCode);
+  } else {
+    Serial.print("Error sending webhook message. Error code: ");
+    Serial.println(httpResponseCode);
+  }
+  
+  http.end();
 }
 
 // END NEW CODE
