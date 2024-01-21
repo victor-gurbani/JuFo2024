@@ -501,7 +501,8 @@ void SerialJSON(String message) {
   String concatV = toJSONbool(VentanaState, TotalVentanas);  //necessary outside the switch and in this function
   String concatL = toJSONbool(LightState, TotalLights);
   String concatLS = toJSON(LightSensorState, TotalLightSensors);
-  Serial.println(
+  String JSONdata = 
+  (
     "{\"ppm_a\": " + String(ppm_analog) 
   + ",\"ppm_u\": " + String(ppm_uart) 
   + ",\"ppm_p\": " + String(ppm_PWM) 
@@ -516,6 +517,25 @@ void SerialJSON(String message) {
   + ",\"lastMotionDelta\": " + (millis() - lastMotion) 
   + ",\"message\": \"" + message + "\"}"
   );
+  Serial.println(JSONdata);
+
+  // Send and store data
+  HTTPClient http;
+  
+  http.begin("VictorMBP.local");
+  http.addHeader("Content-Type", "application/json");
+  
+  int httpResponseCode = http.POST(JSONdata);
+  
+  if (httpResponseCode > 0) {
+    //Serial.print("Data message sent. Response code: ");
+    // Serial.println(httpResponseCode);
+  } else {
+    Serial.print("Error sending data message. Error code: ");
+    Serial.println(httpResponseCode);
+  }
+  
+  http.end();
 }
 // gas reading
 
