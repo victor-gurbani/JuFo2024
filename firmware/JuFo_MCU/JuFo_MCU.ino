@@ -1,10 +1,10 @@
 
-/* WIFI #include <ESP8266WiFi.h>
+#include <ESP8266WiFi.h> 
 const char* ssid = "";
 const char* pass = "";
 const char* host = "";
 const uint16_t port = 80;
-*/
+
 /*
 #define A0 54
 #define A1 55
