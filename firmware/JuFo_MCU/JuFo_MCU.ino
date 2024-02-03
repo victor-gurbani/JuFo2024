@@ -1,10 +1,15 @@
+// Upload: DIP 3,4 ON
+// use TXD0
+// Usage with ESP: DIP 1,2,3,4 ON
+// use TXD3
 
+/* WIFI shouldnt be used here, this is the mega
 #include <ESP8266WiFi.h> 
 const char* ssid = "";
 const char* pass = "";
 const char* host = "";
 const uint16_t port = 80;
-
+*/
 /*
 #define A0 54
 #define A1 55
@@ -95,14 +100,14 @@ int ppmhora[9] = { 900, 800, 600, 850, 800, 600, 800 };
 //slider threshold +-10%
 char SerialChar;
 int ControlInt;                                // multi-purpose int to read from serial
-bool AllowedSource[3] = { true, true, true };  // analog, PWM, Uart
+bool AllowedSource[3] = { false, false, false };  // analog, PWM, Uart TODO: Change this when connecting everything
 
 // START NEW CODE
 //freepins 8  11
 //usedpins 0 1 2 3 4 5 6 9 10 12 13 A0
-const int TotalLights = 2;  // ejemplo con ia de que si aprende que una nunca se enciende da igual la situación (tmb como input se puede usar "otras leds encendidas")
-int LightPin[TotalLights] = { 3, 6 };
-bool LightState[TotalLights] = { false, false };
+const int TotalLights = 4;  // ejemplo con ia de que si aprende que una nunca se enciende da igual la situación (tmb como input se puede usar "otras leds encendidas")
+int LightPin[TotalLights] = { 22, 24, 26, 28 };
+bool LightState[TotalLights] = { false, false, false, false };
 
 const int TotalLightSensors = 2;  // ejemplo con ia de que si aprende que una nunc se enciende )(tmb como input se puede usar "otras leds encendidas")
 int LightSensorPin[TotalLightSensors] = { A1, A2 };
@@ -520,6 +525,7 @@ void SerialJSON(String message) {
   Serial.println(JSONdata);
 
   // Send and store data
+  /* connect to esp thourgh serial interface and tell it to do smth like
   HTTPClient http;
   
   http.begin("VictorMBP.local");
@@ -536,6 +542,7 @@ void SerialJSON(String message) {
   }
   
   http.end();
+  */
 }
 // gas reading
 
@@ -621,6 +628,7 @@ String toJSONbool(bool arr[], int arrSize) {
 }
 
 void alertNewPerson() {
+  /* use serial to connet to esp to tell it to 
   HTTPClient http;
   
   http.begin(webhookURL);
@@ -639,6 +647,7 @@ void alertNewPerson() {
   }
   
   http.end();
+  */
 }
 
 // END NEW CODE
