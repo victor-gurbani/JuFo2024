@@ -2,29 +2,73 @@
 // DIP 7 ON for upload, then OFF
 // use TXD0
 // I think 1,2 ON for AT mode
-
 // WIFI here
-#include <ESP8266WiFi.h> 
-const char* ssid = "";
-const char* pass = "";
+#include <ESP8266WiFi.h>
+#include <WiFiClient.h>
+#include <ESP8266WebServer.h>
+#include <ESP8266mDNS.h>
+#include <AutoConnect.h>
+
+const char* ssid = "Garfield";
+const char* pass = "19792008";
 const char* host = "";
 const uint16_t port = 80;
 
-#include <SoftwareSerial.h>
-/* TODO
-SoftwareSerial SerialCom(13, 12);  // RX, TX
-
+ESP8266WebServer server(80);
+MDNSResponder mdns;
+void handle_NotFound(){
+  server.send(404, "text/plain", "Not found");
+}
 void setup() {
-  WIFI WiFi.mode(WIFI_STA);
+
+  Serial.begin(115200);
+  while (!Serial) {
+    ; // wait for serial port to connect. Needed for native USB port only
+  }
+
+  WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, pass);
   delay(500);
   Serial.print("WiFi is ");
   Serial.println(WiFi.status() == WL_CONNECTED); 
+  while(WiFi.status() != WL_CONNECTED) {
+    Serial.print(".");
+    delay(100);
+  }
+  if (mdns.begin("esp8266"/*/, WiFi.localIP()/*/)) {
+    Serial.print("MDNS responder started for ");
+    Serial.println(WiFi.localIP());
+  }
+  server.onNotFound(handle_NotFound);
+
+  server.on("/", [](){
+    
+    server.send(200, "text/html", "Works!");
+  });
+  server.on("/get", [](){
+    Serial.println("j");
+    while (!Serial.available()) {
+    ;
+    }
+    String webPage = "<p>asdf</p>";
+    while (Serial.available()) {
+     
+      char inChar = Serial.read();
+      webPage += inChar;
+    }
+    
+    server.send(200, "text/html", webPage);
+    delay(500);
+  });
   
+  server.begin();
+  Serial.println("HTTP server started");
 }
 
 void loop() {
-  
+  server.handleClient();
+}
+  /*
    *
    * 
    * g = get

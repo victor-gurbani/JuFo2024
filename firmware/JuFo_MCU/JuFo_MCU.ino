@@ -121,6 +121,10 @@ int motionSensorState = LOW;
 long int lastMotion = millis();
 
 void setup() {
+  // Wifi Connectivity
+  Serial3.begin(115200);
+
+
   Serial.begin(9600);  // esta cambiado !!!
   Serial.println("Machine Initialised");
   /* WIFI WiFi.mode(WIFI_STA);
@@ -159,14 +163,14 @@ void setup() {
     pinMode(LightSensorPin[i], INPUT);
   }
   // TEST IF WORKS
-  delay(500);
+  delay(5000);
   for (int i = 0; i < TotalLights; i++) {
     digitalWrite(LightPin[i], LOW);
   }
   delay(1000);
-  digitalWrite(LightPin[0], analogRead(LightSensorPin[0]) > 0.5 ? LOW : HIGH);
+  digitalWrite(LightPin[0], analogRead(LightSensorPin[0]) > 500 ? LOW : HIGH);
   delay(1000);
-  digitalWrite(LightPin[0], analogRead(LightSensorPin[0]) > 0.5 ? LOW : HIGH);
+  digitalWrite(LightPin[0], analogRead(LightSensorPin[0]) > 500 ? LOW : HIGH);
 
   pinMode(motionSensorPin, INPUT);
   
@@ -175,6 +179,33 @@ void setup() {
   delay(1000);
 }
 
+// Verificacion de la conectividad entre la Mega y ESP8266
+void checkWiFiSerial() {
+  if (Serial3.available()) {
+    while (Serial3.available()) {
+      // Lectura de datos del Serial3
+      char inChar = Serial3.read();
+
+      processCommand(inChar, Serial3);
+      /*
+      inString += inChar;
+      if (inChar == ']') {
+        if (inString.indexOf("[ON]")>0) {
+          digitalWrite(PIN_LED, HIGH);
+        }
+        else if (inString.indexOf("[OFF]")>0) {
+          digitalWrite(PIN_LED, LOW);
+        }
+        else
+        {
+          Serial.println("Wrong command");
+        }
+        inString = "";
+      }
+      */
+    }
+  }
+}
 
 int ppm_uart = 0;
 int ppm_PWM = 0;
@@ -189,14 +220,14 @@ void loop() {
 
   // START NEW CODE
   for (int i = 0; i < TotalLightSensors; i++) {
-    LightSensorState[i] = analogRead(LightSensorPin[i])*1000;
+    LightSensorState[i] = analogRead(LightSensorPin[i]);
   }
   motionSensorState = digitalRead(motionSensorPin);
   if(motionSensorState && millis() - lastMotion > 20000 /*&& (!digitalRead(bluetoothStatePin))*/) {
     // saliste de casa y llevas 20 segundos fuera sin movimiento y no hay nadie cerca(conectado)
     // TODO connect HC05 state pin
     
-    alertNewPerson(); // envia push a dispositivos y ya verán si hay alguien en casa
+    // alertNewPerson(); // envia push a dispositivos y ya verán si hay alguien en casa
   }
   lastMotion = motionSensorState ? millis() : lastMotion;
 
@@ -291,7 +322,13 @@ void loop() {
     }
     // ( millis() - lastMotion < 5000 && illuminationAverage < 0.5 ) // motion in the last 5 seconds and no existing light
     for (int i = 0; i < TotalLights; i++) {
-      digitalWrite(LightPin[i], ( millis() - lastMotion < 5000 && illuminationAverage < 0.5 ) ? HIGH : LOW);
+      // TODO change LightSensorState[0] with illuminationAverage
+      if ( /*/millis() - lastMotion < 5000 && /*/ LightSensorState[0] < 500 ) {
+        digitalWrite(LightPin[i], HIGH);
+      } else {
+        digitalWrite(LightPin[i], LOW);
+      }
+      
     }
   }
   // auto change lights based on light sensor
@@ -335,43 +372,49 @@ void loop() {
    */
   if (Serial.available()) {
     SerialChar = Serial.read();
+    processCommand(SerialChar, Serial);
     // Serial.println("--------------------");
     // Serial.println(SerialChar);
-    switch (SerialChar) {
+    
+    // Serial.println("--------------------");
+  }
+}
+void processCommand(char SerialChar, Stream& selectedSerial) {
+  switch (SerialChar) {
       case 'h':
-        Serial.println("g = get\na = analog\np = PWM\nu = UART\ns = set\na = analog\np = PWM\nu = UART\nm = motor (automatic Window opening)\n   1 = ON (use)\n   0 = OFF (do not use)\nm = set motor\n   1 = ON (use)\n   0 = OFF (do not use)\na = allowed sources\nt = threshold\n   [1-99] = number (suggested max 40-60%) // 50 is normal\n\nw = windows\n   [0-TotalWindows] = window id\n     returns 0 or 1\n\ne = errorcodes\n\n  ERROR CODES:\n  1 - Missing Info\n  2 - Wrong Info");
+        selectedSerial.println("g = get\na = analog\np = PWM\nu = UART\ns = set\na = analog\np = PWM\nu = UART\nm = motor (automatic Window opening)\n   1 = ON (use)\n   0 = OFF (do not use)\nm = set motor\n   1 = ON (use)\n   0 = OFF (do not use)\na = allowed sources\nt = threshold\n   [1-99] = number (suggested max 40-60%) // 50 is normal\n\nw = windows\n   [0-TotalWindows] = window id\n     returns 0 or 1\n\ne = errorcodes\n\n  ERROR CODES:\n  1 - Missing Info\n  2 - Wrong Info");
         break;
       case 'g':  // get
-        if (Serial.available()) {
-          SerialChar = Serial.read();
-          // Serial.println(SerialChar);
+        if (selectedSerial.available()) {
+          SerialChar = selectedSerial.read();
+          // selectedSerial.println(SerialChar);
           if (SerialChar == 'a') {
-            Serial.println(ppm_analog);
+            selectedSerial.println(ppm_analog);
           } else if (SerialChar == 'p') {
-            Serial.println(ppm_PWM);
+            selectedSerial.println(ppm_PWM);
           } else if (SerialChar == 'u') {
-            Serial.println(ppm_uart);
+            selectedSerial.println(ppm_uart);
           } else if (SerialChar == 'l') {
-            Serial.println("{ " + toJSON(LightSensorState, TotalLightSensors) + " }");
+            selectedSerial.println("{ " + toJSON(LightSensorState, TotalLightSensors) + " }");
           } else if (SerialChar == 'm') {
-            Serial.println(millis() - lastMotion);
+            selectedSerial.println(millis() - lastMotion);
           } else {
-            Serial.println("ERROR (Code: 2)");
+            selectedSerial.println("ERROR (Code: 2)");
           }
         } else {
-          Serial.println("ERROR (Code: 1)");
+          selectedSerial.println("ERROR (Code: 1)");
         }
         break;
       case 's':  // set
-        if (Serial.available()) {
-          SerialChar = Serial.read();
-          //Serial.println(SerialChar);
-          if (Serial.available()) {
-            ControlInt = Serial.read() - 48;
+        if (selectedSerial.available()) {
+          SerialChar = selectedSerial.read();
+          //selectedSerial.println(SerialChar);
+          if (selectedSerial.available()) {
+            ControlInt = selectedSerial.read() - 48;
             ControlInt = (bool)ControlInt;
-            // Serial.println(ControlInt);
+            // selectedSerial.println(ControlInt);
           } else {
-            Serial.println("ERROR (Code: 1)");
+            selectedSerial.println("ERROR (Code: 1)");
           }
           if (SerialChar == 'a') {
             AllowedSource[0] = ControlInt;
@@ -381,29 +424,31 @@ void loop() {
             AllowedSource[2] = ControlInt;
           } else if (SerialChar == 'm') {
             motorAllowed = ControlInt;
+          } else if (SerialChar == 'l') {
+            lightAllowed = ControlInt;
           } else {
-            Serial.println("ERROR (Code: 2)");
+            selectedSerial.println("ERROR (Code: 2)");
             break;
           }
           SerialJSON("OK");
         } else {
-          Serial.println("ERROR (Code: 1)");
+          selectedSerial.println("ERROR (Code: 1)");
         }
         break;
       case 'm':  // use servo/motor 1 open:
-                 //      if (Serial.available()) {
-                 //           ControlInt = Serial.read() - 48;
+                 //      if (selectedSerial.available()) {
+                 //           ControlInt = selectedSerial.read() - 48;
                  //           ControlInt = (bool)ControlInt;
-                 //           Serial.println(ControlInt);
+                 //           selectedSerial.println(ControlInt);
                  //           motorAllowed = ControlInt;
-                 //           Serial.println("OK");
+                 //           selectedSerial.println("OK");
                  //         } else {
-                 //           Serial.println("ERROR (Code: 1)");
+                 //           selectedSerial.println("ERROR (Code: 1)");
                  //         }
-        if (Serial.available()) {
-          ControlInt = Serial.read() - 48;
+        if (selectedSerial.available()) {
+          ControlInt = selectedSerial.read() - 48;
           ControlInt = (bool)ControlInt;
-          // Serial.println(ControlInt);
+          // selectedSerial.println(ControlInt);
           if (ControlInt) {
             if (current_angle != 1200) {
               for (current_angle = 1750; current_angle > 1200; current_angle -= 1) {
@@ -422,86 +467,84 @@ void loop() {
           last_used = millis();
           SerialJSON("OK");
         } else {
-          Serial.println("ERROR (Code: 1)");
+          selectedSerial.println("ERROR (Code: 1)");
         }
         break;
       case 'l':
-        if (Serial.available()) {
-          int ChosenLight = (int)Serial.read();
-          if (Serial.available()) {
-            ControlInt = Serial.read() - 48;
+        if (selectedSerial.available()) {
+          int ChosenLight = (int)(selectedSerial.read() - 48);
+          if (selectedSerial.available()) {
+            ControlInt = selectedSerial.read() - 48;
             ControlInt = (bool)ControlInt;
-            // Serial.println(ControlInt);
+            // selectedSerial.println(ControlInt);
             if(ChosenLight < TotalLights) {
-              digitalWrite(ChosenLight, ControlInt ? HIGH : LOW);            
+              digitalWrite( LightPin[ChosenLight], (ControlInt ? HIGH : LOW)); 
             } else {
-              Serial.println("ERROR (Code: 2)");
+              selectedSerial.print(ChosenLight);
+              selectedSerial.println("ERROR (Code: 2)");
             }
             SerialJSON("OK");
           } else {
-            Serial.println("ERROR (Code: 1)");
+            selectedSerial.println("ERROR (Code: 1)");
           }
         } else {
-          Serial.println("ERROR (Code: 1)");
+          selectedSerial.println("ERROR (Code: 1)");
         }
         break;
       case 'a':
-        Serial.print("Analog ");
-        Serial.println(AllowedSource[0]);
-        Serial.print("PWM ");
-        Serial.println(AllowedSource[1]);
-        Serial.print("UART ");
-        Serial.println(AllowedSource[2]);
+        selectedSerial.print("Analog ");
+        selectedSerial.println(AllowedSource[0]);
+        selectedSerial.print("PWM ");
+        selectedSerial.println(AllowedSource[1]);
+        selectedSerial.print("UART ");
+        selectedSerial.println(AllowedSource[2]);
         break;
       case 't':  // threshold between 40-60% (d = default)
-        if (!Serial.available()) {
-          Serial.println("ERROR (Code: 1)");
+        if (!selectedSerial.available()) {
+          selectedSerial.println("ERROR (Code: 1)");
         } else {
-          SerialChar = Serial.read();
+          SerialChar = selectedSerial.read();
           if (SerialChar == 'd') {
             threshold = 100;  // in %
           } else {
             int n1 = (int)(SerialChar - 48);
             int n2;
-            if (Serial.available()) {
-              SerialChar = Serial.read();  //warning NL and CR (ASCII 10,13)
+            if (selectedSerial.available()) {
+              SerialChar = selectedSerial.read();  //warning NL and CR (ASCII 10,13)
               n2 = (int)(SerialChar - 48);
             } else {
-              Serial.println("ERROR (Code: 1)");
+              selectedSerial.println("ERROR (Code: 1)");
               break;
             }
 
             threshold = (n1 * 10 + n2) * 2;  // los numeros son * 2 pq 50 son 100
           }
         }
-        //Serial.println(threshold);
+        //selectedSerial.println(threshold);
         break;
       case 'w':
-        if (Serial.available())
-          ControlInt = (int)Serial.read();
+        if (selectedSerial.available())
+          ControlInt = (int)selectedSerial.read();
         else {
-          Serial.println("ERROR (Code: 1)");
+          selectedSerial.println("ERROR (Code: 1)");
           break;
         }
         if (ControlInt <= TotalVentanas)
-          Serial.println(VentanaState[ControlInt]);
+          selectedSerial.println(VentanaState[ControlInt]);
         else
-          Serial.println("ERROR (Code: 2)");
+          selectedSerial.println("ERROR (Code: 2)");
         break;
       case 'e':
-        Serial.println("1 - Missing Info\n2 - Wrong Info");
+        selectedSerial.println("1 - Missing Info\n2 - Wrong Info");
         break;
       case 'j':
         SerialJSON("");
         break;
       default:  // anything else
-        // Serial.println("ERROR WTF");
+        // selectedSerial.println("ERROR WTF");
         break;
     }
-    // Serial.println("--------------------");
-  }
 }
-
 void SerialJSON(String message) {
   String concatV = toJSONbool(VentanaState, TotalVentanas);  //necessary outside the switch and in this function
   String concatL = toJSONbool(LightState, TotalLights);
