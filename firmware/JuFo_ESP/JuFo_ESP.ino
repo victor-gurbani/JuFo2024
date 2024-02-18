@@ -9,17 +9,31 @@
 #include <ESP8266mDNS.h>
 #include <AutoConnect.h>
 
-const char* ssid = "Garfield";
-const char* pass = "19792008";
+const char* ssid = "asdf";
+const char* pass = "00000000";
 const char* host = "";
 const uint16_t port = 80;
 
-// const bool 
-
+bool useHotSpot = false;
+IPAddress myIP;
 ESP8266WebServer server(80);
-MDNSResponder mdns;
+// MDNSResponder mdns;
 void handle_NotFound(){
-  server.send(404, "text/plain", "Not found");
+  // no clue what they sent
+  String message = "File Not Found\n\n";
+  message += "URI: ";
+  message += server.uri();
+  message += "\nMethod: ";
+  message += (server.method() == HTTP_GET) ? "GET" : "POST";
+  message += "\nArguments: ";
+  message += server.args();
+  message += "\n";
+
+  for (uint8_t i = 0; i < server.args(); i++) {
+    message += " " + server.argName(i) + ": " + server.arg(i) + "\n";
+  }
+
+  server.send(404, "text/plain", message);
 }
 void setup() {
 
@@ -28,46 +42,70 @@ void setup() {
     ; // wait for serial port to connect. Needed for native USB port only
   }
 
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid, pass);
-  delay(500);
-  Serial.print("WiFi is ");
-  Serial.println(WiFi.status() == WL_CONNECTED); 
-  while(WiFi.status() != WL_CONNECTED) {
-    Serial.print(".");
-    delay(100);
+  if(!useHotSpot) {
+    WiFi.mode(WIFI_STA);
+    // esp_wifi_set_ps(WIFI_PS_NONE);
+    WiFi.begin(ssid, pass);
+    delay(500);  
+    // Serial.print("WiFi is ");
+    // Serial.println(WiFi.status() == WL_CONNECTED); 
+    while(WiFi.status() != WL_CONNECTED) {
+      // Serial.print(".");
+      delay(100);
+    }
+    myIP = WiFi.localIP();
+  } else {
+    WiFi.softAP("JuFo Victor Gurbani", "LichtKontrolle"); 
+    myIP = WiFi.softAPIP();
   }
-  if (mdns.begin("esp8266"/*/, WiFi.localIP()/*/)) {
-    Serial.print("MDNS responder started for ");
-    Serial.println(WiFi.localIP());
+  if (MDNS.begin("varfield"/*/, WiFi.localIP()/*/)) {
+    // Serial.print("MDNS responder started for ");
+    // Serial.println(myIP);
   }
   server.onNotFound(handle_NotFound);
 
   server.on("/", [](){
-    
+    // Serial.print("omg");
+    server.sendHeader("Access-Control-Allow-Origin", "*");
     server.send(200, "text/html", "Works!");
+    delay(10);
   });
   server.on("/get", [](){
-    Serial.println("j");
+    Serial.print("j");
+    int limitTime = 0;
+    bool getWorked = true;
     while (!Serial.available()) {
-    ;
+      limitTime++;
+      delay(20);
+      if(limitTime > 250){
+        getWorked = false;
+      }
     }
-    String webPage = "<p>asdf</p>";
-    while (Serial.available()) {
-     
-      char inChar = Serial.read();
-      webPage += inChar;
+    if(!getWorked) {
+      server.send(200, "text/json", "{error}");
+    } else {
+      delay(200); // wait for finish buffering
+      String webPage = "";
+      while (Serial.available()) {
+      
+        char inChar = Serial.read();
+        webPage += inChar;
+      }
+      
+      server.send(200, "text/json", webPage);
     }
-    
-    server.send(200, "text/html", webPage);
-    delay(500);
+    delay(10);
   });
   
   server.begin();
-  Serial.println("HTTP server started");
+  // Serial.println("HTTP server started");
+
+  MDNS.addService("http", "tcp", 80);
+
 }
 
 void loop() {
+  MDNS.update();
   server.handleClient();
 }
   /*

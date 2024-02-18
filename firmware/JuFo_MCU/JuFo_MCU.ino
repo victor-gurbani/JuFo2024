@@ -189,7 +189,7 @@ void checkWiFiSerial() {
     while (Serial3.available()) {
       // Lectura de datos del Serial3
       char inChar = Serial3.read();
-
+       SerialJSON("ESPdataredcieved", &Serial2);
       processCommand(inChar, &Serial3);
       /*
       inString += inChar;
@@ -287,7 +287,7 @@ void loop() {
   if (main_ppm > /*ppmhora[hora]*/ 1000 * threshold / 100) {  // cambiar entre (desde app) 80% y 120% (40-60*2)
     //Serial2.println(current_angle);
     if (number_of_closed >= TotalVentanas / 2 && millis() - last_used > 3000 && current_angle != 1200) {
-      SerialJSON("Open Windows");
+      SerialJSON("Open Windows", &Serial2);
       if (motorAllowed) {
         for (current_angle = 1750; current_angle > 1200; current_angle -= 1) {
           myservo.write(current_angle);
@@ -300,7 +300,7 @@ void loop() {
     }
   } else {
     if (/*number_of_closed < TotalVentanas / 2 && */ millis() - last_used > 3000 && current_angle != 1750) {
-      SerialJSON("Close Windows");
+      SerialJSON("Close Windows", &Serial2);
       if (motorAllowed) {
         for (current_angle = 1200; current_angle < 1750; current_angle += 1) {
           myservo.write(current_angle);
@@ -384,6 +384,7 @@ void loop() {
     
     // Serial2.println("--------------------");
   }
+  checkWiFiSerial();
 }
 void processCommand(char SerialChar, Stream *selectedSerial) {
   switch (SerialChar) {
@@ -436,7 +437,7 @@ void processCommand(char SerialChar, Stream *selectedSerial) {
             selectedSerial->println("ERROR (Code: 2)");
             break;
           }
-          SerialJSON("OK");
+          SerialJSON("OK", &Serial2);
         } else {
           selectedSerial->println("ERROR (Code: 1)");
         }
@@ -471,7 +472,7 @@ void processCommand(char SerialChar, Stream *selectedSerial) {
             }
           }
           last_used = millis();
-          SerialJSON("OK");
+          SerialJSON("OK", &Serial2);
         } else {
           selectedSerial->println("ERROR (Code: 1)");
         }
@@ -545,14 +546,14 @@ void processCommand(char SerialChar, Stream *selectedSerial) {
         selectedSerial->println("1 - Missing Info\n2 - Wrong Info");
         break;
       case 'j':
-        SerialJSON("");
+        SerialJSON("", selectedSerial);
         break;
       default:  // anything else
         // selectedSerial->println("ERROR WTF");
         break;
     }
 }
-void SerialJSON(String message) {
+void SerialJSON(String message, Stream *selectedSerial) {
   String concatV = toJSONbool(VentanaState, TotalVentanas);  //necessary outside the switch and in this function
   String concatL = toJSONbool(LightState, TotalLights);
   String concatLS = toJSON(LightSensorState, TotalLightSensors);
@@ -572,7 +573,7 @@ void SerialJSON(String message) {
   + ",\"lastMotionDelta\": " + (millis() - lastMotion) 
   + ",\"message\": \"" + message + "\"}"
   );
-  Serial2.println(JSONdata);
+  selectedSerial->print(JSONdata);
 
   // Send and store data
   /* connect to esp thourgh serial interface and tell it to do smth like
