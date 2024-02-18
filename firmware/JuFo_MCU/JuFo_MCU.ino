@@ -119,19 +119,19 @@ bool lightAllowed = true;  // variable to read the value from the analog pin
 int motionSensorPin = 8;
 int motionSensorState = LOW;
 long int lastMotion = millis();
-
+void processCommand(char SerialChar, Stream *selectedSerial);
 void setup() {
   // Wifi Connectivity
   Serial3.begin(115200);
 
 
-  Serial.begin(9600);  // esta cambiado !!!
-  Serial.println("Machine Initialised");
+  Serial2.begin(9600);  // esta cambiado !!!
+  Serial2.println("Machine Initialised");
   /* WIFI WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, pass);
   delay(500);
-  Serial.print("WiFi is ");
-  Serial.println(WiFi.status() == WL_CONNECTED); */
+  Serial2.print("WiFi is ");
+  Serial2.println(WiFi.status() == WL_CONNECTED); */
   myservo.attach(9);
   last_used = millis();
   for (current_angle = 1750; current_angle > 1200; current_angle -= 1) {
@@ -151,13 +151,14 @@ void setup() {
   }
 
   SerialCom.begin(9600);
-  // Serial.begin(9600);
+  // Serial2.begin(9600);
   pinMode(pwmPin, INPUT_PULLUP);
 
   // START NEW CODE
   for (int i = 0; i < TotalLights; i++) {
     pinMode(LightPin[i], OUTPUT);
     digitalWrite(LightPin[i], HIGH);
+    LightState[i] = true;
   }
   for (int i = 0; i < TotalLightSensors; i++) {
     pinMode(LightSensorPin[i], INPUT);
@@ -166,11 +167,14 @@ void setup() {
   delay(5000);
   for (int i = 0; i < TotalLights; i++) {
     digitalWrite(LightPin[i], LOW);
+    LightState[i] = false;
   }
   delay(1000);
   digitalWrite(LightPin[0], analogRead(LightSensorPin[0]) > 500 ? LOW : HIGH);
+  LightState[0] = (analogRead(LightSensorPin[0]) > 500) ;
   delay(1000);
   digitalWrite(LightPin[0], analogRead(LightSensorPin[0]) > 500 ? LOW : HIGH);
+  LightState[0] = (analogRead(LightSensorPin[0]) > 500 );
 
   pinMode(motionSensorPin, INPUT);
   
@@ -186,7 +190,7 @@ void checkWiFiSerial() {
       // Lectura de datos del Serial3
       char inChar = Serial3.read();
 
-      processCommand(inChar, Serial3);
+      processCommand(inChar, &Serial3);
       /*
       inString += inChar;
       if (inChar == ']') {
@@ -198,7 +202,7 @@ void checkWiFiSerial() {
         }
         else
         {
-          Serial.println("Wrong command");
+          Serial2.println("Wrong command");
         }
         inString = "";
       }
@@ -212,7 +216,7 @@ int ppm_PWM = 0;
 int ppm_analog = 0;
 
 void loop() {
-  // Serial.println("true1");
+  // Serial2.println("true1");
 
   for (int i = 0; i < TotalVentanas; i++) {
     VentanaState[i] = digitalRead(VentanaPin[i]);
@@ -232,22 +236,22 @@ void loop() {
   lastMotion = motionSensorState ? millis() : lastMotion;
 
   // END NEW CODE
-  //  Serial.print(VentanaState[0]);
-  //  Serial.println("<-- Ventana 1");
-  //  Serial.print(VentanaState[1]);
-  //  Serial.println("<-- Ventana 2");
-  //  Serial.print(VentanaState[2]);
-  //  Serial.println("<-- Ventana 3");
+  //  Serial2.print(VentanaState[0]);
+  //  Serial2.println("<-- Ventana 1");
+  //  Serial2.print(VentanaState[1]);
+  //  Serial2.println("<-- Ventana 2");
+  //  Serial2.print(VentanaState[2]);
+  //  Serial2.println("<-- Ventana 3");
   //
 
   if (AllowedSource[2]) {
-    //  Serial.println("reading uart...");
+    //  Serial2.println("reading uart...");
     ppm_uart = gas_concentration_uart();
   } else {
     ppm_uart = 0;
   }
 
-  //  Serial.println("reading pwm..."); //not working
+  //  Serial2.println("reading pwm..."); //not working
   if (AllowedSource[1]) {
     ppm_PWM = gas_concentration_PWM();
   } else {
@@ -255,20 +259,20 @@ void loop() {
   }
 
   if (AllowedSource[0]) {
-    //  Serial.println("reading analog..."); //not accurate
+    //  Serial2.println("reading analog..."); //not accurate
     ppm_analog = get_analog();
   } else {
     ppm_analog = 0;
   }
 
   /* Print Serial Info
-  //  Serial.print(ppm_uart);
-  //  Serial.println(" <-- UART");
-  //  Serial.print(ppm_PWM);
-  //  Serial.println(" <-- PWM");
-  //  Serial.print(ppm_analog);
-  //  Serial.println(" <-- Analog");
-  //  Serial.println("--------------------");*/
+  //  Serial2.print(ppm_uart);
+  //  Serial2.println(" <-- UART");
+  //  Serial2.print(ppm_PWM);
+  //  Serial2.println(" <-- PWM");
+  //  Serial2.print(ppm_analog);
+  //  Serial2.println(" <-- Analog");
+  //  Serial2.println("--------------------");*/
   int number_of_closed = 0;
   for (int i = 0; i < TotalVentanas; i++) {
     if (VentanaState[i] == 0) {
@@ -277,11 +281,11 @@ void loop() {
   }
 
   // automatic opening
-  // Serial.println(TotalVentanas / 2);
+  // Serial2.println(TotalVentanas / 2);
   int main_ppm = (ppm_PWM != 0) ? ppm_PWM : ppm_uart;
 
   if (main_ppm > /*ppmhora[hora]*/ 1000 * threshold / 100) {  // cambiar entre (desde app) 80% y 120% (40-60*2)
-    //Serial.println(current_angle);
+    //Serial2.println(current_angle);
     if (number_of_closed >= TotalVentanas / 2 && millis() - last_used > 3000 && current_angle != 1200) {
       SerialJSON("Open Windows");
       if (motorAllowed) {
@@ -323,10 +327,12 @@ void loop() {
     // ( millis() - lastMotion < 5000 && illuminationAverage < 0.5 ) // motion in the last 5 seconds and no existing light
     for (int i = 0; i < TotalLights; i++) {
       // TODO change LightSensorState[0] with illuminationAverage
-      if ( /*/millis() - lastMotion < 5000 && /*/ LightSensorState[0] < 500 ) {
+      if ( millis() - lastMotion < 5000 && LightSensorState[0] < 500 ) {
         digitalWrite(LightPin[i], HIGH);
+        LightState[i] = true;
       } else {
         digitalWrite(LightPin[i], LOW);
+        LightState[i] = false;
       }
       
     }
@@ -370,51 +376,51 @@ void loop() {
    *  1 - Missing Info
    *  2 - Wrong Info
    */
-  if (Serial.available()) {
-    SerialChar = Serial.read();
-    processCommand(SerialChar, Serial);
-    // Serial.println("--------------------");
-    // Serial.println(SerialChar);
+  if (Serial2.available()) {
+    SerialChar = Serial2.read();
+    processCommand(SerialChar, &Serial2);
+    // Serial2.println("--------------------");
+    // Serial2.println(SerialChar);
     
-    // Serial.println("--------------------");
+    // Serial2.println("--------------------");
   }
 }
-void processCommand(char SerialChar, Stream& selectedSerial) {
+void processCommand(char SerialChar, Stream *selectedSerial) {
   switch (SerialChar) {
       case 'h':
-        selectedSerial.println("g = get\na = analog\np = PWM\nu = UART\ns = set\na = analog\np = PWM\nu = UART\nm = motor (automatic Window opening)\n   1 = ON (use)\n   0 = OFF (do not use)\nm = set motor\n   1 = ON (use)\n   0 = OFF (do not use)\na = allowed sources\nt = threshold\n   [1-99] = number (suggested max 40-60%) // 50 is normal\n\nw = windows\n   [0-TotalWindows] = window id\n     returns 0 or 1\n\ne = errorcodes\n\n  ERROR CODES:\n  1 - Missing Info\n  2 - Wrong Info");
+        selectedSerial->println("g = get\na = analog\np = PWM\nu = UART\ns = set\na = analog\np = PWM\nu = UART\nm = motor (automatic Window opening)\n   1 = ON (use)\n   0 = OFF (do not use)\nm = set motor\n   1 = ON (use)\n   0 = OFF (do not use)\na = allowed sources\nt = threshold\n   [1-99] = number (suggested max 40-60%) // 50 is normal\n\nw = windows\n   [0-TotalWindows] = window id\n     returns 0 or 1\n\ne = errorcodes\n\n  ERROR CODES:\n  1 - Missing Info\n  2 - Wrong Info");
         break;
       case 'g':  // get
-        if (selectedSerial.available()) {
-          SerialChar = selectedSerial.read();
-          // selectedSerial.println(SerialChar);
+        if (selectedSerial->available()) {
+          SerialChar = selectedSerial->read();
+          // selectedSerial->println(SerialChar);
           if (SerialChar == 'a') {
-            selectedSerial.println(ppm_analog);
+            selectedSerial->println(ppm_analog);
           } else if (SerialChar == 'p') {
-            selectedSerial.println(ppm_PWM);
+            selectedSerial->println(ppm_PWM);
           } else if (SerialChar == 'u') {
-            selectedSerial.println(ppm_uart);
+            selectedSerial->println(ppm_uart);
           } else if (SerialChar == 'l') {
-            selectedSerial.println("{ " + toJSON(LightSensorState, TotalLightSensors) + " }");
+            selectedSerial->println("{ " + toJSON(LightSensorState, TotalLightSensors) + " }");
           } else if (SerialChar == 'm') {
-            selectedSerial.println(millis() - lastMotion);
+            selectedSerial->println(millis() - lastMotion);
           } else {
-            selectedSerial.println("ERROR (Code: 2)");
+            selectedSerial->println("ERROR (Code: 2)");
           }
         } else {
-          selectedSerial.println("ERROR (Code: 1)");
+          selectedSerial->println("ERROR (Code: 1)");
         }
         break;
       case 's':  // set
-        if (selectedSerial.available()) {
-          SerialChar = selectedSerial.read();
-          //selectedSerial.println(SerialChar);
-          if (selectedSerial.available()) {
-            ControlInt = selectedSerial.read() - 48;
+        if (selectedSerial->available()) {
+          SerialChar = selectedSerial->read();
+          //selectedSerial->println(SerialChar);
+          if (selectedSerial->available()) {
+            ControlInt = selectedSerial->read() - 48;
             ControlInt = (bool)ControlInt;
-            // selectedSerial.println(ControlInt);
+            // selectedSerial->println(ControlInt);
           } else {
-            selectedSerial.println("ERROR (Code: 1)");
+            selectedSerial->println("ERROR (Code: 1)");
           }
           if (SerialChar == 'a') {
             AllowedSource[0] = ControlInt;
@@ -427,28 +433,28 @@ void processCommand(char SerialChar, Stream& selectedSerial) {
           } else if (SerialChar == 'l') {
             lightAllowed = ControlInt;
           } else {
-            selectedSerial.println("ERROR (Code: 2)");
+            selectedSerial->println("ERROR (Code: 2)");
             break;
           }
           SerialJSON("OK");
         } else {
-          selectedSerial.println("ERROR (Code: 1)");
+          selectedSerial->println("ERROR (Code: 1)");
         }
         break;
       case 'm':  // use servo/motor 1 open:
-                 //      if (selectedSerial.available()) {
-                 //           ControlInt = selectedSerial.read() - 48;
+                 //      if (selectedSerial->available()) {
+                 //           ControlInt = selectedSerial->read() - 48;
                  //           ControlInt = (bool)ControlInt;
-                 //           selectedSerial.println(ControlInt);
+                 //           selectedSerial->println(ControlInt);
                  //           motorAllowed = ControlInt;
-                 //           selectedSerial.println("OK");
+                 //           selectedSerial->println("OK");
                  //         } else {
-                 //           selectedSerial.println("ERROR (Code: 1)");
+                 //           selectedSerial->println("ERROR (Code: 1)");
                  //         }
-        if (selectedSerial.available()) {
-          ControlInt = selectedSerial.read() - 48;
+        if (selectedSerial->available()) {
+          ControlInt = selectedSerial->read() - 48;
           ControlInt = (bool)ControlInt;
-          // selectedSerial.println(ControlInt);
+          // selectedSerial->println(ControlInt);
           if (ControlInt) {
             if (current_angle != 1200) {
               for (current_angle = 1750; current_angle > 1200; current_angle -= 1) {
@@ -467,81 +473,82 @@ void processCommand(char SerialChar, Stream& selectedSerial) {
           last_used = millis();
           SerialJSON("OK");
         } else {
-          selectedSerial.println("ERROR (Code: 1)");
+          selectedSerial->println("ERROR (Code: 1)");
         }
         break;
       case 'l':
-        if (selectedSerial.available()) {
-          int ChosenLight = (int)(selectedSerial.read() - 48);
-          if (selectedSerial.available()) {
-            ControlInt = selectedSerial.read() - 48;
+        if (selectedSerial->available()) {
+          int ChosenLight = (int)(selectedSerial->read() - 48);
+          if (selectedSerial->available()) {
+            ControlInt = selectedSerial->read() - 48;
             ControlInt = (bool)ControlInt;
-            // selectedSerial.println(ControlInt);
+            // selectedSerial->println(ControlInt);
             if(ChosenLight < TotalLights) {
               digitalWrite( LightPin[ChosenLight], (ControlInt ? HIGH : LOW)); 
+              LightState[ChosenLight] = ControlInt;
             } else {
-              selectedSerial.print(ChosenLight);
-              selectedSerial.println("ERROR (Code: 2)");
+              // selectedSerial->print(ChosenLight);
+              selectedSerial->println("ERROR (Code: 2)");
             }
-            SerialJSON("OK");
+            // SerialJSON("OK");
           } else {
-            selectedSerial.println("ERROR (Code: 1)");
+            selectedSerial->println("ERROR (Code: 1)");
           }
         } else {
-          selectedSerial.println("ERROR (Code: 1)");
+          selectedSerial->println("ERROR (Code: 1)");
         }
         break;
       case 'a':
-        selectedSerial.print("Analog ");
-        selectedSerial.println(AllowedSource[0]);
-        selectedSerial.print("PWM ");
-        selectedSerial.println(AllowedSource[1]);
-        selectedSerial.print("UART ");
-        selectedSerial.println(AllowedSource[2]);
+        selectedSerial->print("Analog ");
+        selectedSerial->println(AllowedSource[0]);
+        selectedSerial->print("PWM ");
+        selectedSerial->println(AllowedSource[1]);
+        selectedSerial->print("UART ");
+        selectedSerial->println(AllowedSource[2]);
         break;
       case 't':  // threshold between 40-60% (d = default)
-        if (!selectedSerial.available()) {
-          selectedSerial.println("ERROR (Code: 1)");
+        if (!selectedSerial->available()) {
+          selectedSerial->println("ERROR (Code: 1)");
         } else {
-          SerialChar = selectedSerial.read();
+          SerialChar = selectedSerial->read();
           if (SerialChar == 'd') {
             threshold = 100;  // in %
           } else {
             int n1 = (int)(SerialChar - 48);
             int n2;
-            if (selectedSerial.available()) {
-              SerialChar = selectedSerial.read();  //warning NL and CR (ASCII 10,13)
+            if (selectedSerial->available()) {
+              SerialChar = selectedSerial->read();  //warning NL and CR (ASCII 10,13)
               n2 = (int)(SerialChar - 48);
             } else {
-              selectedSerial.println("ERROR (Code: 1)");
+              selectedSerial->println("ERROR (Code: 1)");
               break;
             }
 
             threshold = (n1 * 10 + n2) * 2;  // los numeros son * 2 pq 50 son 100
           }
         }
-        //selectedSerial.println(threshold);
+        //selectedSerial->println(threshold);
         break;
       case 'w':
-        if (selectedSerial.available())
-          ControlInt = (int)selectedSerial.read();
+        if (selectedSerial->available())
+          ControlInt = (int)selectedSerial->read();
         else {
-          selectedSerial.println("ERROR (Code: 1)");
+          selectedSerial->println("ERROR (Code: 1)");
           break;
         }
         if (ControlInt <= TotalVentanas)
-          selectedSerial.println(VentanaState[ControlInt]);
+          selectedSerial->println(VentanaState[ControlInt]);
         else
-          selectedSerial.println("ERROR (Code: 2)");
+          selectedSerial->println("ERROR (Code: 2)");
         break;
       case 'e':
-        selectedSerial.println("1 - Missing Info\n2 - Wrong Info");
+        selectedSerial->println("1 - Missing Info\n2 - Wrong Info");
         break;
       case 'j':
         SerialJSON("");
         break;
       default:  // anything else
-        // selectedSerial.println("ERROR WTF");
+        // selectedSerial->println("ERROR WTF");
         break;
     }
 }
@@ -565,7 +572,7 @@ void SerialJSON(String message) {
   + ",\"lastMotionDelta\": " + (millis() - lastMotion) 
   + ",\"message\": \"" + message + "\"}"
   );
-  Serial.println(JSONdata);
+  Serial2.println(JSONdata);
 
   // Send and store data
   /* connect to esp thourgh serial interface and tell it to do smth like
@@ -578,10 +585,10 @@ void SerialJSON(String message) {
   
   if (httpResponseCode > 0) {
     //Serial.print("Data message sent. Response code: ");
-    // Serial.println(httpResponseCode);
+    // Serial2.println(httpResponseCode);
   } else {
-    Serial.print("Error sending data message. Error code: ");
-    Serial.println(httpResponseCode);
+    Serial2.print("Error sending data message. Error code: ");
+    Serial2.println(httpResponseCode);
   }
   
   http.end();
@@ -682,11 +689,11 @@ void alertNewPerson() {
   int httpResponseCode = http.POST(payload);
   
   if (httpResponseCode > 0) {
-    Serial.print("Webhook message sent. Response code: ");
-    Serial.println(httpResponseCode);
+    Serial2.print("Webhook message sent. Response code: ");
+    Serial2.println(httpResponseCode);
   } else {
-    Serial.print("Error sending webhook message. Error code: ");
-    Serial.println(httpResponseCode);
+    Serial2.print("Error sending webhook message. Error code: ");
+    Serial2.println(httpResponseCode);
   }
   
   http.end();

@@ -14,6 +14,8 @@ const char* pass = "19792008";
 const char* host = "";
 const uint16_t port = 80;
 
+// const bool 
+
 ESP8266WebServer server(80);
 MDNSResponder mdns;
 void handle_NotFound(){
