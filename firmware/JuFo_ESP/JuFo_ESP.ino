@@ -71,6 +71,7 @@ void setup() {
     delay(10);
   });
   server.on("/get", [](){
+    server.sendHeader("Access-Control-Allow-Origin", "*");
     Serial.print("j");
     int limitTime = 0;
     bool getWorked = true;

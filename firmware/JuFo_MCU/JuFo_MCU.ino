@@ -108,7 +108,7 @@ bool AllowedSource[3] = { false, false, false };  // analog, PWM, Uart TODO: Cha
 const int TotalLights = 4;  // ejemplo con ia de que si aprende que una nunca se enciende da igual la situación (tmb como input se puede usar "otras leds encendidas")
 int LightPin[TotalLights] = { 22, 24, 26, 28 };
 bool LightState[TotalLights] = { false, false, false, false };
-
+int lightThreshold = 250;
 const int TotalLightSensors = 2;  // ejemplo con ia de que si aprende que una nunc se enciende )(tmb como input se puede usar "otras leds encendidas")
 int LightSensorPin[TotalLightSensors] = { A1, A2 };
 int LightSensorState[TotalLightSensors] = {}; // will have to multiply by 1000 to be albe to precise
@@ -327,7 +327,7 @@ void loop() {
     // ( millis() - lastMotion < 5000 && illuminationAverage < 0.5 ) // motion in the last 5 seconds and no existing light
     for (int i = 0; i < TotalLights; i++) {
       // TODO change LightSensorState[0] with illuminationAverage
-      if ( millis() - lastMotion < 5000 && LightSensorState[0] < 500 ) {
+      if ( millis() - lastMotion < 5000 && LightSensorState[0] < lightThreshold ) {
         digitalWrite(LightPin[i], HIGH);
         LightState[i] = true;
       } else {
@@ -359,6 +359,7 @@ void loop() {
    *   1 = ON (use)
    *   0 = OFF (do not use)
    * l = set light
+   *  t = threshold 
    *  n = lightPin
    *   1 = ON
    *   0 = OFF
@@ -479,7 +480,16 @@ void processCommand(char SerialChar, Stream *selectedSerial) {
         break;
       case 'l':
         if (selectedSerial->available()) {
-          int ChosenLight = (int)(selectedSerial->read() - 48);
+          char tempInput = selectedSerial->read();
+          if(tempInput = 't') { // threshold 
+            if (selectedSerial->available()) {
+              lightThreshold = (selectedSerial->read() - 48) * 10;
+            } else {
+              selectedSerial->println("ERROR (Code: 1)");
+            }
+            break;
+          }
+          int ChosenLight = (int)(tempInput - 48);
           if (selectedSerial->available()) {
             ControlInt = selectedSerial->read() - 48;
             ControlInt = (bool)ControlInt;
