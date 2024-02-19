@@ -108,7 +108,7 @@ bool AllowedSource[3] = { false, false, false };  // analog, PWM, Uart TODO: Cha
 const int TotalLights = 4;  // ejemplo con ia de que si aprende que una nunca se enciende da igual la situación (tmb como input se puede usar "otras leds encendidas")
 int LightPin[TotalLights] = { 22, 24, 26, 28 };
 bool LightState[TotalLights] = { false, false, false, false };
-int lightThreshold = 250;
+int lightThreshold = 150;
 const int TotalLightSensors = 2;  // ejemplo con ia de que si aprende que una nunc se enciende )(tmb como input se puede usar "otras leds encendidas")
 int LightSensorPin[TotalLightSensors] = { A1, A2 };
 int LightSensorState[TotalLightSensors] = {}; // will have to multiply by 1000 to be albe to precise
@@ -581,6 +581,7 @@ void SerialJSON(String message, Stream *selectedSerial) {
   + ",\"lightSensors\": " + concatLS
   + ",\"lightAllowed\": " + lightAllowed 
   + ",\"lastMotionDelta\": " + (millis() - lastMotion) 
+  + ",\"lightThreshold\": " + lightThreshold 
   + ",\"message\": \"" + message + "\"}"
   );
   selectedSerial->print(JSONdata);
