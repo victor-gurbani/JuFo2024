@@ -1,21 +1,69 @@
-tfvis.visor().surface({ name: "Jugend Forscht", tab: "Input Data" });
+// Load existing data from localStorage if available
+let fetchedDataArray = JSON.parse(localStorage.getItem("fetchedData")) || [];
+// Update the table with each item in the fetchedDataArray with a delay
+window.addEventListener("load", () => {
+  setTimeout(() => {
+    fetchedDataArray.forEach((item, index) => {
+      setTimeout(
+        () => {
+          updateTable(item);
+        },
+        index * (2000 / fetchedDataArray.length),
+      ); // Adjust the delay (in milliseconds) as needed
+    });
+  }, 500);
+});
 
+tfvis.visor().surface({ name: "Jugend Forscht", tab: "Input Data" });
+tfvis.visor().close();
 // Define your model
 const model = tf.sequential();
 // input: luz 1, luz 2, luz 3, luz 4, ventana 1, ventana 2, ventana 3, ventana 4, CO2 (500-1500), luminosidad (fuera), movimiento, hora, dia, bluetoothConectado (persona)
 model.add(tf.layers.dense({ inputShape: [14], units: 16, activation: "relu" }));
-// model.add(tf.layers.dense({ units: 8, activation: "relu" }));
+model.add(tf.layers.dense({ units: 8, activation: "relu" }));
 // model.add(tf.layers.dense({ units: 8, activation: "relu" }));
 // outputs: luz1,luz2,luz3,luz4, ventana1Motor,
 model.add(tf.layers.dense({ units: 5, activation: "softmax" }));
 
 // Compile the model
 model.compile({
-  optimizer: "sgd",
+  optimizer: "adam",
   loss: "categoricalCrossentropy",
   metrics: ["accuracy"],
+  earlystop: tf.callbacks.earlyStopping({ monitor: "val_acc" }), //{ monitor: "val_acc" }
 });
+
+// function onEpochEnd() {
+//   console.log("Epoch End");
+// }
+
 function getDataSample() {
+  const data = [];
+
+  // Generate 1000 data samples with the first element of the input being 1
+  for (let i = 0; i < 1000; i++) {
+    const input = [1];
+    for (let j = 0; j < 13; j++) {
+      input.push(Math.random());
+    }
+    const output = [0, 0, 0, 0, 1];
+    data.push({ input, output });
+  }
+
+  // Generate 1000 data samples with the first element of the input being 0
+  for (let i = 0; i < 1000; i++) {
+    const input = [0];
+    for (let j = 0; j < 13; j++) {
+      input.push(Math.random());
+    }
+    const output = [1, 0, 0, 0, 0];
+    data.push({ input, output });
+  }
+
+  return data;
+}
+
+function getDataSampleReal() {
   return [
     {
       input: [1, 1, 0.3, 1, 0, 0, 0, 0, 0.5, 1, 1, 0.3, 0.3, 1],
@@ -30,18 +78,6 @@ function getDataSample() {
       output: [0, 0, 0, 0, 1],
     },
     {
-      input: [1, 1, 0.5, 1, 0, 0, 0, 0, 0.5, 1, 1, 0.3, 0.3, 1],
-      output: [0, 0, 0, 0, 1],
-    },
-    {
-      input: [1, 1, 0.1, 1, 0, 1, 0, 0, 0.5, 1, 1, 0.3, 0.3, 1],
-      output: [0, 0, 0, 0, 1],
-    },
-    {
-      input: [1, 1, 0.9, 1, 0, 0, 0, 1, 0.5, 1, 1, 0.3, 0.3, 1],
-      output: [0, 0, 0, 0, 1],
-    },
-    {
       input: [0, 1, 0.5, 1, 0, 0, 0, 0, 0.5, 1, 1, 0.3, 0.3, 1],
       output: [0, 0, 0, 0, 0],
     },
@@ -51,18 +87,6 @@ function getDataSample() {
     },
     {
       input: [0, 1, 0.6, 1, 0, 0, 0, 0, 0.5, 1, 1, 0.3, 0.8, 1],
-      output: [0, 0, 0, 0, 0],
-    },
-    {
-      input: [0, 1, 0.8, 1, 0, 0, 0, 0, 0.5, 1, 1, 0.3, 0.3, 1],
-      output: [0, 0, 0, 0, 0],
-    },
-    {
-      input: [0, 1, 0.9, 1, 0, 0, 1, 0, 0.5, 1, 1, 0.3, 0.3, 1],
-      output: [0, 0, 0, 0, 0],
-    },
-    {
-      input: [0, 1, 0.1, 1, 0, 0, 0, 0, 0.5, 1, 1, 0.3, 0.8, 1],
       output: [0, 0, 0, 0, 0],
     },
   ];
@@ -79,6 +103,7 @@ const generateSample = () => {
 
 async function train(model, data, fitCallbacks) {
   console.log(data);
+  document.querySelector("#styletag").href = "";
   // no slice pq sino no hay datos suficientes todavia
   // const trainingData = data.slice(0, numTrainingSamples);
   const trainingData = data;
@@ -107,10 +132,11 @@ async function train(model, data, fitCallbacks) {
 
   // Train the model
   return model.fit(trainingX, trainingY, {
-    epochs: 200,
+    epochs: 100,
     shuffle: true,
     validationData: [validationX, validationY],
     callbacks: fitCallbacks,
+    batchSize: 100,
   });
 }
 // .then((history) => {
@@ -137,6 +163,8 @@ const splitRatio = 0.8;
 const numTrainingSamples = Math.floor(numSamples * splitRatio);
 
 async function watchTraining() {
+  tfvis.visor().open();
+
   // View
   const metrics = ["loss", "val_loss", "acc", "val_acc"];
   const container = {
@@ -146,7 +174,15 @@ async function watchTraining() {
       height: "500px",
     },
   };
-  const callbacks = tfvis.show.fitCallbacks(container, metrics);
+  // const callbacks = tfvis.show.fitCallbacks(container, metrics);
+  const callbacks = [
+    tfvis.show.fitCallbacks(container, metrics),
+    // tf.callbacks.earlyStopping(), //{ monitor: "val_acc" }
+    // new tf.CustomCallback({
+    //   onEpochEnd: onEpochEnd(),
+    // }),
+  ];
+
   return train(model, data, callbacks);
   // // Train the model with callbacks for visualization
   // await model.fit(trainingX, trainingY, {
@@ -166,7 +202,9 @@ async function watchTraining() {
 document
   .querySelector("#start-training")
   .addEventListener("click", () => watchTraining());
-
+document.querySelector("#show-visor").addEventListener("click", () => {
+  tfvis.visor().open();
+});
 function predictionOd() {
   // Given input data for prediction
   const inputData = tf.tensor2d([
@@ -179,3 +217,79 @@ function predictionOd() {
   // Print the predicted output
   prediction.print();
 }
+
+// get and store data
+function fetchData() {
+  fetch("http://varfield.local/get")
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+      return response.json();
+    })
+    .then((data) => {
+      fetchedDataArray.push(data);
+      // Save the updated array in localStorage
+      localStorage.setItem("fetchedData", JSON.stringify(fetchedDataArray));
+      // Update the table with the fetched data
+      updateTable(data);
+    })
+    .catch((error) => {
+      console.error("Error fetching data:", error);
+    });
+}
+
+function updateTable(data) {
+  const tableBody = document
+    .getElementById("data-table")
+    .getElementsByTagName("tbody")[0];
+  const newRow = tableBody.insertRow(0);
+
+  Object.values(data).forEach((value) => {
+    const cell = newRow.insertCell();
+    if (Array.isArray(value)) {
+      cell.textContent = `[${value.join(", ")}]`;
+    } else {
+      cell.textContent = value;
+    }
+  });
+
+  // Highlight the newly added row
+  newRow.classList.add("highlight");
+
+  // Remove the highlight class after the transition ends
+  setTimeout(() => {
+    newRow.classList.remove("highlight");
+  }, 500);
+}
+
+// Set up a periodic fetch every 5 seconds (adjust the interval as needed)
+const fetchInterval = setInterval(fetchData, 5000);
+
+// To stop the periodic fetch, you can use clearInterval(fetchInterval);
+
+// remote control
+document.getElementById("sendControlCmd").addEventListener("click", () => {
+  let theInput = document.getElementById("controlInput");
+  let cmd = theInput.value;
+  theInput.value = "";
+  fetch("http://varfield.local/send?cmd=" + encodeURIComponent(cmd))
+    .then((response) => {
+      return response.text();
+    })
+    .then((text) => {
+      if (text == "OK") {
+        // all ok
+      } else {
+        alert("error on send");
+      }
+    });
+});
+
+setInterval(() => {
+  if (
+    document.querySelector("#styletag").href != "https://localhost/style.css"
+  ) {
+    document.querySelector("#styletag").href = "/style.css";
+  }
+}, 120000);
