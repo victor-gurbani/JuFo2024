@@ -67,7 +67,15 @@ void setup() {
   server.on("/", [](){
     // Serial.print("omg");
     server.sendHeader("Access-Control-Allow-Origin", "*");
-    server.send(200, "text/html", "Works!");
+    server.send(200, "text/html", R"rawliteral(
+      <head>
+      <meta name="viewport" content="width=device-width, initial-scale=1" />
+      </head>
+      <body>
+    <img src="https://www.jugend-forscht.de/fileadmin/assets/img/logo_jugend-forscht_wir-foerdern-talente.svg"><h1>Victor Gurbani</h1>
+    <a href='/get'>GET info</a>
+    </body>
+    )rawliteral");
     delay(10);
   });
   server.on("/get", [](){
@@ -95,6 +103,22 @@ void setup() {
       
       server.send(200, "text/json", webPage);
     }
+    delay(10);
+  });
+  server.on("/send", [](){
+    server.sendHeader("Access-Control-Allow-Origin", "*");
+    String message = "OK";
+    if (server.arg(cmd)== ""){     //Parameter not found
+
+      message = "Command Argument not found (use cmd)";
+
+    } else {
+      Serial.print(server.arg(cmd));
+    }
+    
+      
+    server.send(200, "text/plain", message);
+    
     delay(10);
   });
   
