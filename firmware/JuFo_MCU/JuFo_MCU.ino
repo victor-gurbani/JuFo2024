@@ -481,7 +481,7 @@ void processCommand(char SerialChar, Stream *selectedSerial) {
       case 'l':
         if (selectedSerial->available()) {
           char tempInput = selectedSerial->read();
-          if(tempInput = 't') { // threshold 
+          if(tempInput == 't') { // threshold 
             if (selectedSerial->available()) {
               lightThreshold = (selectedSerial->read() - 48) * 10;
             } else {
