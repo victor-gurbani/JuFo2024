@@ -1,3 +1,6 @@
+// _api_ url
+var espUrl = "http://varfield.local/";
+
 // Load existing data from localStorage if available
 let fetchedDataArray = JSON.parse(localStorage.getItem("fetchedData")) || [];
 // Update the table with each item in the fetchedDataArray with a delay
@@ -8,7 +11,7 @@ window.addEventListener("load", () => {
         () => {
           updateTable(item);
         },
-        index * (2000 / fetchedDataArray.length),
+        index * (500 / fetchedDataArray.length),
       ); // Adjust the delay (in milliseconds) as needed
     });
   }, 500);
@@ -220,7 +223,7 @@ function predictionOd() {
 
 // get and store data
 function fetchData() {
-  fetch("http://varfield.local/get")
+  fetch(espUrl + "get")
     .then((response) => {
       if (!response.ok) {
         throw new Error("Network response was not ok");
@@ -272,8 +275,11 @@ const fetchInterval = setInterval(fetchData, 5000);
 document.getElementById("sendControlCmd").addEventListener("click", () => {
   let theInput = document.getElementById("controlInput");
   let cmd = theInput.value;
+  sendCommand(cmd);
   theInput.value = "";
-  fetch("http://varfield.local/send?cmd=" + encodeURIComponent(cmd))
+});
+function sendCommand(cmd) {
+  fetch(espUrl + "send?cmd=" + encodeURIComponent(cmd))
     .then((response) => {
       return response.text();
     })
@@ -284,8 +290,26 @@ document.getElementById("sendControlCmd").addEventListener("click", () => {
         alert("error on send");
       }
     });
-});
+}
 
+document.getElementById("lightsON").addEventListener("click", () => {
+  sendCommand("sl0l01l11l21l31");
+});
+document.getElementById("lightsOFF").addEventListener("click", () => {
+  sendCommand("sl0l00l10l20l30");
+});
+document.getElementById("lightThresholdBtn").addEventListener("click", () => {
+  let theInput = document.getElementById("lightThreshold");
+  let cmd = theInput.value;
+  if (cmd > 9) {
+    theInput.value = 9;
+  } else if (cmd < 0) {
+    theInput.value = 0;
+  }
+  cmd = theInput.value;
+  sendCommand("lt" + cmd);
+  theInput.value = "";
+});
 setInterval(() => {
   if (
     document.querySelector("#styletag").href != "https://localhost/style.css"
@@ -293,3 +317,76 @@ setInterval(() => {
     document.querySelector("#styletag").href = "/style.css";
   }
 }, 120000);
+document
+  .getElementById("predictionValueRequest")
+  .addEventListener("keyup", () => {
+    loadInputColorbar();
+  });
+function loadInputColorbar() {
+  const colorBar = document.getElementById("colorBarInput");
+
+  // Set the background gradient based on the valuesArray
+  const gradient = JSON.parse(
+    document.getElementById("predictionValueRequest").value,
+  ).map((value) => {
+    const color = `rgba(0, 0, 255, ${1 - value})`; // Dark blue to yellow gradient
+    return color;
+  });
+
+  colorBar.style.background = `linear-gradient(to right, ${gradient.join(
+    ", ",
+  )})`;
+}
+loadInputColorbar();
+let exampleAnimateInterval = null;
+function animateInputExamples(type = null) {
+  if (exampleAnimateInterval) {
+    clearInterval(exampleAnimateInterval);
+    exampleAnimateInterval = null;
+  }
+  if (!type) {
+    document.getElementById("colorBar").style = "background: black";
+    return;
+  }
+  let input = [1];
+  exampleAnimateInterval = setInterval(() => {
+    if (type > 0.5) {
+      document.getElementById("colorBar").style =
+        "background: linear-gradient(to right, rgb(0, 0, 255), rgb(0, 0, 255), rgb(0, 0, 255), rgb(0, 0, 255), rgba(0, 0, 255, 0));";
+      input = [1];
+      for (let j = 0; j < 13; j++) {
+        input.push(Math.random());
+      }
+    } else {
+      document.getElementById("colorBar").style =
+        "background: linear-gradient(to right, rgb(0, 0, 255, 0), rgb(0, 0, 255), rgb(0, 0, 255), rgb(0, 0, 255), rgba(0, 0, 255));";
+      input = [0];
+      for (let j = 0; j < 13; j++) {
+        input.push(Math.random());
+      }
+    }
+    document.getElementById("predictionValueRequest").value =
+      JSON.stringify(input);
+    loadInputColorbar();
+  }, 25);
+}
+document.getElementById("predictNow").addEventListener("click", () => {
+  let theInput = document.getElementById("predictionValueRequest");
+  // console.log(JSON.parse(theInput.value));
+  let ts2d = tf.tensor2d(JSON.parse(theInput.value), [1, 14]);
+  let predictionArray = Array.from(model.predict(ts2d).dataSync());
+  document.getElementById("predictOutput").textContent =
+    JSON.stringify(predictionArray);
+  // Get the color bar element
+  const colorBar = document.getElementById("colorBar");
+
+  // Set the background gradient based on the valuesArray
+  const gradient = predictionArray.map((value) => {
+    const color = `rgba(0, 0, 255, ${1 - value})`; // Dark blue to yellow gradient
+    return color;
+  });
+
+  colorBar.style.background = `linear-gradient(to right, ${gradient.join(
+    ", ",
+  )})`;
+});

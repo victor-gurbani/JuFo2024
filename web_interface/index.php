@@ -52,6 +52,7 @@
       table {
         border-collapse: collapse;
         width: 100%;
+        height: 100%;
 /*        overflow-x: auto;*/
       }
       th, td {
@@ -70,6 +71,12 @@
         background-color: yellow;
         scale: 1.01;
       }
+
+      #colorBar, #colorBarInput {
+/*            width: 300px;*/
+            height: 20px;
+            background: linear-gradient(to right, yellow, yellow);
+        }
     </style>
   </head>
   <body>
@@ -83,17 +90,50 @@
         margin: 0.2em;
     ">
     </header>
-    <main style="width: calc(100% - 40px); max-width: 100%">
+    <main style="width: calc(100% - 40px); max-width: 100%;height: calc(100vh - 120px);">
       <!-- <div id="micro-out-div">Training...</div> -->
       <h2>Ferngesteuertes Haus Kontrolle</h2>
+      <br/>
+      <details>
+        <summary>Other commands</summary>
+        <fieldset>
+          <!-- <legend>Other commands</legend> -->
+          <button id="lightsON">Turn All Lights ON</button><button id="lightsOFF">Turn All Lights OFF</button>
+          <hr/>
+          <label for="lightThreshold">Light threshold: </label><input min="1" max="9" type="number" id="lightThreshold"><button id="lightThresholdBtn">Set!</button>
+        </fieldset>
+        <br/>
+      </details>
+      <br/>
       <input type="text" id="controlInput"> <button id="sendControlCmd">Send</button>
       <hr>
       <h2>Training Kontrolle</h2><br>
       <button id="start-training">start</button>
       <button id="show-visor">Show</button>
+      <fieldset>
+        <legend> Model Predictions </legend>
+        <details>
+          <summary>I/O info</summary>
+          <p style="font-size: 0.6em;"><i>input:</i> luz 1, luz 2, luz 3, luz 4, ventana 1, ventana 2, ventana 3, ventana 4, CO2 (500-1500), luminosidad (fuera), movimiento, hora, dia, bluetoothConectado (persona)</p>
+          <p style="font-size: 0.6em;"><i>output: </i> luz1,luz2,luz3,luz4, ventana1Motor</p>
+        </details>
+        <input type="text" placeholder="2dtensor of values [ , , , , ]" value="[1, 1, 0.3, 1, 0, 0, 0, 0, 0.5, 1, 1, 0.3, 0.3, 1]" id="predictionValueRequest">
+        <div style="background: yellow;" ><div id="colorBarInput"></div></div><br/>
+        <!-- <details>
+          <summary>exampleanimation</summary>
+          <p style="font-size: 0.6em;"><i>input:</i> luz 1, luz 2, luz 3, luz 4, ventana 1, ventana 2, ventana 3, ventana 4, CO2 (500-1500), luminosidad (fuera), movimiento, hora, dia, bluetoothConectado (persona)</p>
+          <p style="font-size: 0.6em;"><i>output: </i> luz1,luz2,luz3,luz4, ventana1Motor</p>
+        </details> -->
+        <button id="predictNow">Predict</button><br/>
+        <pre id="predictOutput"></pre>
+        <br/>
+            
+        <div style="background: yellow;" ><div id="colorBar"></div></div>
 
+      
+      </fieldset>
       <h3>Daten</h3>
-      <div class="table">
+      <div class="table" style="max-height:100dvh;">
         <table id="data-table">
           <thead>
             <tr>
