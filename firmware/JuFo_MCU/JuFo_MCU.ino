@@ -100,7 +100,7 @@ int ppmhora[9] = { 900, 800, 600, 850, 800, 600, 800 };
 //slider threshold +-10%
 char SerialChar;
 int ControlInt;                                // multi-purpose int to read from serial
-bool AllowedSource[3] = { false, false, false };  // analog, PWM, Uart TODO: Change this when connecting everything
+bool AllowedSource[3] = { false, true, false };  // analog, PWM, Uart 
 
 // START NEW CODE
 //freepins 8  11
@@ -483,7 +483,7 @@ void processCommand(char SerialChar, Stream *selectedSerial) {
           char tempInput = selectedSerial->read();
           if(tempInput == 't') { // threshold 
             if (selectedSerial->available()) {
-              lightThreshold = (selectedSerial->read() - 48) * 10;
+              lightThreshold = (selectedSerial->read() - 48) * 40;
             } else {
               selectedSerial->println("ERROR (Code: 1)");
             }

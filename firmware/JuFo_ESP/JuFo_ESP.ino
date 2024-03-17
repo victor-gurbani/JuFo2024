@@ -108,12 +108,12 @@ void setup() {
   server.on("/send", [](){
     server.sendHeader("Access-Control-Allow-Origin", "*");
     String message = "OK";
-    if (server.arg(cmd)== ""){     //Parameter not found
+    if (server.arg("cmd")== ""){     //Parameter not found
 
       message = "Command Argument not found (use cmd)";
 
     } else {
-      Serial.print(server.arg(cmd));
+      Serial.print(server.arg("cmd"));
     }
     
       
