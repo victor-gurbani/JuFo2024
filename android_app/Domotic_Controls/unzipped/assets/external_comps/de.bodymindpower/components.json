@@ -1,0 +1,23 @@
+[{
+ "categoryString": "EXTENSION",
+ "dateBuilt": "2021-07-10T17:07:12+0000",
+ "nonVisible": "true",
+ "iconName": "https://bodymindpower.de/temp/BMP_icon.png",
+ "methods": [{
+  "deprecated": "false",
+  "name": "Remove",
+  "description": "Method for Remove",
+  "params": []
+ }],
+ "blockProperties": [],
+ "helpUrl": "",
+ "type": "de.bodymindpower.RemoveRecentApp",
+ "androidMinSdk": 7,
+ "version": "1",
+ "external": "true",
+ "showOnPalette": "true",
+ "name": "RemoveRecentApp",
+ "helpString": "This extension removes app from recent apps.",
+ "properties": [],
+ "events": []
+}]

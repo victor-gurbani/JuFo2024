@@ -1,0 +1,23 @@
+[{
+ "categoryString": "EXTENSION",
+ "dateBuilt": "2022-03-28T11:15:42+0000",
+ "nonVisible": "true",
+ "iconName": "https://docs.google.com/drawings/d/e/2PACX-1vQCI87PHLBF0jb8QWyYmIRQSjjNW3EFXf-qpsWCvBYkUQ9vEgPAB8SpxcMpblxNpbIYrjCjLrRLIU2c/pub?w=16&h=16",
+ "methods": [{
+  "deprecated": "false",
+  "name": "MoveTaskToBack",
+  "description": "Moves the task to the background.",
+  "params": []
+ }],
+ "blockProperties": [],
+ "helpUrl": "",
+ "type": "com.gordonlu.movetasktoback.MoveTaskToBack",
+ "androidMinSdk": 7,
+ "version": "1",
+ "external": "true",
+ "showOnPalette": "true",
+ "name": "MoveTaskToBack",
+ "helpString": "A non-visible extension to move task to back.",
+ "properties": [],
+ "events": []
+}]

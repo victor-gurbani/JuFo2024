@@ -1,0 +1,33 @@
+[{
+ "categoryString": "EXTENSION",
+ "dateBuilt": "2020-10-12T19:52:56+0300",
+ "nonVisible": "true",
+ "iconName": "https://res.cloudinary.com/mydiaryapp/image/upload/c_scale,h_16,w_16/v1602419125/nfc-icon-31_wmlwd3.png",
+ "methods": [
+  {
+   "deprecated": "false",
+   "name": "Enabled",
+   "description": "Checks if the NFC sensor is enabled. Return string (true or false). If not exists return: *Your phone does not have NFC sensor*.",
+   "params": [],
+   "returnType": "text"
+  },
+  {
+   "deprecated": "false",
+   "name": "Exists",
+   "description": "Checks if the NFC sensor is exists. return boolean.",
+   "params": [],
+   "returnType": "boolean"
+  }
+ ],
+ "blockProperties": [],
+ "helpUrl": "https://community.kodular.io/t/nfc-tools-my-third-extension/87894",
+ "type": "com.matanel.NFCtools.NFC",
+ "androidMinSdk": 7,
+ "version": "1",
+ "external": "true",
+ "showOnPalette": "true",
+ "name": "NFC",
+ "helpString": "This extension has 2 tools, check if NFC exists and check if enabled.",
+ "properties": [],
+ "events": []
+}]

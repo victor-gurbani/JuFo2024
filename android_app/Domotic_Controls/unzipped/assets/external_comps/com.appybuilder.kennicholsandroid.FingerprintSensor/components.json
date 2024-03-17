@@ -1,0 +1,88 @@
+[{
+ "categoryString": "EXTENSION",
+ "nonVisible": "true",
+ "iconName": "https://live.staticflickr.com/65535/48968530968_94b51de65f_t.jpg",
+ "methods": [
+  {
+   "deprecated": "false",
+   "name": "Authenticate",
+   "description": "Starts Fingerprint Authentication",
+   "params": []
+  },
+  {
+   "deprecated": "false",
+   "name": "CancelAuthentication",
+   "description": "Cancels Fingerprint Authentication",
+   "params": []
+  },
+  {
+   "deprecated": "false",
+   "name": "HasEnrolledFingerprints",
+   "description": "Checks if device has Enrolled Fingerprints.",
+   "params": [],
+   "returnType": "boolean"
+  },
+  {
+   "deprecated": "false",
+   "name": "HasFingerprintPermission",
+   "description": "Checks if the user has granted the app permission to use the Fingerprint Sensor.",
+   "params": [],
+   "returnType": "boolean"
+  },
+  {
+   "deprecated": "false",
+   "name": "HasFingerprintSensor",
+   "description": "Checks if device has a Fingerprint Sensor.",
+   "params": [],
+   "returnType": "boolean"
+  },
+  {
+   "deprecated": "false",
+   "name": "IsKeyguardSecure",
+   "description": "Checks if the Keyguard(Lock Screen) is Secure. This is required to be able to use Fingerprint Authentication",
+   "params": [],
+   "returnType": "boolean"
+  }
+ ],
+ "blockProperties": [],
+ "helpUrl": "",
+ "type": "com.appybuilder.kennicholsandroid.FingerprintSensor.FingerprintSensor",
+ "version": "1",
+ "external": "true",
+ "showOnPalette": "true",
+ "name": "FingerprintSensor",
+ "helpString": "This Extension was created by Ken with the AppyBuilder Code Editor.<br>Create your own here:<br><a href='https://editor.appybuilder.com' target='_blank'>https://editor.appybuilder.com<\/a><br>",
+ "properties": [],
+ "events": [
+  {
+   "deprecated": "false",
+   "name": "AuthenticationError",
+   "description": "Called when an unrecoverable error has been encountered and the operation is complete.",
+   "params": [{
+    "name": "msg",
+    "type": "text"
+   }]
+  },
+  {
+   "deprecated": "false",
+   "name": "AuthenticationFailed",
+   "description": "Called when a fingerprint is valid but not recognized.",
+   "params": []
+  },
+  {
+   "deprecated": "false",
+   "name": "AuthenticationHelp",
+   "description": "Called when a recoverable error has been encountered during authentication.",
+   "params": [{
+    "name": "msg",
+    "type": "text"
+   }]
+  },
+  {
+   "deprecated": "false",
+   "name": "AuthenticationSucceeded",
+   "description": "Called when a fingerprint is recognized.",
+   "params": []
+  }
+ ]
+}]

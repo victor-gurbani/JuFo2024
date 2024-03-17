@@ -1,0 +1,911 @@
+[{
+ "categoryString": "EXTENSION",
+ "dateBuilt": "2022-02-13T02:00:48+0000",
+ "nonVisible": "true",
+ "iconName": "https://docs.google.com/drawings/d/e/2PACX-1vQCI87PHLBF0jb8QWyYmIRQSjjNW3EFXf-qpsWCvBYkUQ9vEgPAB8SpxcMpblxNpbIYrjCjLrRLIU2c/pub?w=16&h=16",
+ "methods": [
+  {
+   "deprecated": "false",
+   "name": "AppPackageName",
+   "description": "Returns the package name of the current running application.",
+   "params": [],
+   "returnType": "text"
+  },
+  {
+   "deprecated": "false",
+   "name": "ApplicationLastUpdatedTime",
+   "description": "Returns the last updated time of the application from the given package name.",
+   "params": [{
+    "name": "packageName",
+    "type": "text"
+   }],
+   "returnType": "number"
+  },
+  {
+   "deprecated": "false",
+   "name": "ApplicationName",
+   "description": "Returns the application name from the given package name, else returns the notFound value.",
+   "params": [
+    {
+     "name": "packageName",
+     "type": "text"
+    },
+    {
+     "name": "notFound",
+     "type": "text"
+    }
+   ],
+   "returnType": "text"
+  },
+  {
+   "deprecated": "false",
+   "name": "ApplicationSpecificDirectory",
+   "description": "Returns an absolute path of the application specific directory.",
+   "params": [],
+   "returnType": "text"
+  },
+  {
+   "deprecated": "false",
+   "name": "BatteryCapacity",
+   "description": "Returns the battery capacity.",
+   "params": [],
+   "returnType": "number"
+  },
+  {
+   "deprecated": "false",
+   "name": "BatteryHealth",
+   "description": "Returns the health value of the phone's battery.",
+   "params": [],
+   "returnType": "text"
+  },
+  {
+   "deprecated": "false",
+   "name": "BatteryPercentage",
+   "description": "Returns the battery level in percentage.",
+   "params": [],
+   "returnType": "number"
+  },
+  {
+   "deprecated": "false",
+   "name": "BatteryPluggedSource",
+   "description": "Returns the device the phone is plugged to. Can be 'USB', 'AC', 'WIRELESS' or 'UNKNOWN'.",
+   "params": [],
+   "returnType": "text"
+  },
+  {
+   "deprecated": "false",
+   "name": "BatteryStatus",
+   "description": "Returns the current status of the phone's battery.",
+   "params": [],
+   "returnType": "text"
+  },
+  {
+   "deprecated": "false",
+   "name": "BatteryTechnology",
+   "description": "Returns the battery technology.",
+   "params": [],
+   "returnType": "text"
+  },
+  {
+   "deprecated": "false",
+   "name": "BatteryVoltage",
+   "description": "Returns the current battery voltage.",
+   "params": [],
+   "returnType": "number"
+  },
+  {
+   "deprecated": "false",
+   "name": "Board",
+   "description": "Returns the name of the underlying board, like goldfish.",
+   "params": [],
+   "returnType": "text"
+  },
+  {
+   "deprecated": "false",
+   "name": "Bootloader",
+   "description": "Returns the system bootloader version number.",
+   "params": [],
+   "returnType": "text"
+  },
+  {
+   "deprecated": "false",
+   "name": "Brand",
+   "description": "Returns the consumer-visible brand with which the product/hardware will be associated, if any.",
+   "params": [],
+   "returnType": "text"
+  },
+  {
+   "deprecated": "false",
+   "name": "CacheDirectory",
+   "description": "Returns the absolute path of the cache directory of the application.",
+   "params": [],
+   "returnType": "text"
+  },
+  {
+   "deprecated": "false",
+   "name": "ColorConvertHexToInt",
+   "description": "Convert a hex color to a integer color. The result is returned as integer. This function does not support shorthand hex values like #000.",
+   "params": [{
+    "name": "hexColor",
+    "type": "text"
+   }],
+   "returnType": "number"
+  },
+  {
+   "deprecated": "false",
+   "name": "ColorConvertIntToHex",
+   "description": "Convert a integer color to a hex color. The result is returned as string.",
+   "params": [{
+    "name": "intColor",
+    "type": "number"
+   }],
+   "returnType": "text"
+  },
+  {
+   "deprecated": "false",
+   "name": "CurrentLatitude",
+   "description": "Returns the user's current latitude.",
+   "params": [],
+   "returnType": "number"
+  },
+  {
+   "deprecated": "false",
+   "name": "CurrentLongitude",
+   "description": "Returns the user's current longitude.",
+   "params": [],
+   "returnType": "number"
+  },
+  {
+   "deprecated": "false",
+   "name": "DeviceId",
+   "description": "Returns the ID of the device.",
+   "params": [],
+   "returnType": "text"
+  },
+  {
+   "deprecated": "false",
+   "name": "DisableBluetooth",
+   "description": "Turns off Bluetooth without user interaction.",
+   "params": []
+  },
+  {
+   "deprecated": "false",
+   "name": "Display",
+   "description": "Returns a build ID string meant for displaying to the user.",
+   "params": [],
+   "returnType": "text"
+  },
+  {
+   "deprecated": "false",
+   "name": "DisplayCountry",
+   "description": "Returns a name for the locale's country that is appropriate for display to the user.",
+   "params": [],
+   "returnType": "text"
+  },
+  {
+   "deprecated": "false",
+   "name": "DisplayFontScale",
+   "description": "Returns the font scale of the display.",
+   "params": [],
+   "returnType": "number"
+  },
+  {
+   "deprecated": "false",
+   "name": "DisplayHeight",
+   "description": "Returns the display height of the device.",
+   "params": [],
+   "returnType": "number"
+  },
+  {
+   "deprecated": "false",
+   "name": "DisplayLanguage",
+   "description": "Returns a name for the locale's language that is appropriate for display to the user.",
+   "params": [],
+   "returnType": "text"
+  },
+  {
+   "deprecated": "false",
+   "name": "DisplayPhysicalSize",
+   "description": "Returns the physical size of the device.",
+   "params": [],
+   "returnType": "number"
+  },
+  {
+   "deprecated": "false",
+   "name": "DisplayRefreshRate",
+   "description": "Returns the refresh rate of the display in frames per second.",
+   "params": [],
+   "returnType": "number"
+  },
+  {
+   "deprecated": "false",
+   "name": "DisplayRotation",
+   "description": "Returns the rotation of the screen from its 'natural' orientation. The returned value may be Surface.ROTATION_0 (no rotation), Surface.ROTATION_90, Surface.ROTATION_180, or Surface.ROTATION_270.For example, if a device has a naturally tall screen, and the user has turned it on its side to go into a landscape orientation, the value returned here may be either Surface.ROTATION_90 or Surface.ROTATION_270 depending on the direction it was turned. The angle is the rotation of the drawn graphics on the screen, which is the opposite direction of the physical rotation of the device.",
+   "params": [],
+   "returnType": "number"
+  },
+  {
+   "deprecated": "false",
+   "name": "DisplayScreenTimeout",
+   "description": "Returns the screen timeout time of the device.",
+   "params": [],
+   "returnType": "number"
+  },
+  {
+   "deprecated": "false",
+   "name": "DisplayScript",
+   "description": "Returns a name for the the locale's script that is appropriate for display to the user.",
+   "params": [],
+   "returnType": "text"
+  },
+  {
+   "deprecated": "false",
+   "name": "DisplayWidth",
+   "description": "Returns the display width of the device.",
+   "params": [],
+   "returnType": "number"
+  },
+  {
+   "deprecated": "false",
+   "name": "EnableBluetooth",
+   "description": "Turns on Bluetooth without user interaction.",
+   "params": []
+  },
+  {
+   "deprecated": "false",
+   "name": "ExternalStorageAvailable",
+   "description": "Returns the available storage size in bytes.",
+   "params": [],
+   "returnType": "number"
+  },
+  {
+   "deprecated": "false",
+   "name": "ExternalStorageTotal",
+   "description": "Returns the total amount of external storage in bytes.",
+   "params": [],
+   "returnType": "number"
+  },
+  {
+   "deprecated": "false",
+   "name": "ExternalStorageUsed",
+   "description": "Returns the used amount of external storage in bytes.",
+   "params": [],
+   "returnType": "number"
+  },
+  {
+   "deprecated": "false",
+   "name": "Fingerprint",
+   "description": "Returns the fingerprint of the device.",
+   "params": [],
+   "returnType": "text"
+  },
+  {
+   "deprecated": "false",
+   "name": "GetBatteryChargingTime",
+   "description": "Attempts to calculate the remaining charging time and triggers the GotChargingTime event.",
+   "params": []
+  },
+  {
+   "deprecated": "false",
+   "name": "GetCity",
+   "description": "Returns the city name from the given latitude and the longitude.",
+   "params": [
+    {
+     "name": "latitude",
+     "type": "number"
+    },
+    {
+     "name": "longitude",
+     "type": "number"
+    }
+   ],
+   "returnType": "text"
+  },
+  {
+   "deprecated": "false",
+   "name": "GetCountryName",
+   "description": "Returns the name of the country from the given latitude and longitude.",
+   "params": [
+    {
+     "name": "latitude",
+     "type": "number"
+    },
+    {
+     "name": "longitude",
+     "type": "number"
+    }
+   ],
+   "returnType": "text"
+  },
+  {
+   "deprecated": "false",
+   "name": "GetIpAddress",
+   "description": "Returns the IP address.",
+   "params": [{
+    "name": "useIpV4",
+    "type": "boolean"
+   }],
+   "returnType": "text"
+  },
+  {
+   "deprecated": "false",
+   "name": "GetLuminanceOfColor",
+   "description": "Returns the relative luminance of a color. This block only supports devices above or Android 8.0.",
+   "params": [{
+    "name": "color",
+    "type": "number"
+   }],
+   "returnType": "number"
+  },
+  {
+   "deprecated": "false",
+   "name": "GetMacAddress",
+   "description": "Returns the MAC address(media access control address) of the device.",
+   "params": [],
+   "returnType": "text"
+  },
+  {
+   "deprecated": "false",
+   "name": "GetNumberOfCores",
+   "description": "Returns the number of processors available to the Java virtual machine.",
+   "params": [],
+   "returnType": "number"
+  },
+  {
+   "deprecated": "false",
+   "name": "GetPostalCode",
+   "description": "Returns the postal code from the latitude and the longitude.",
+   "params": [
+    {
+     "name": "latitude",
+     "type": "number"
+    },
+    {
+     "name": "longitude",
+     "type": "number"
+    }
+   ],
+   "returnType": "text"
+  },
+  {
+   "deprecated": "false",
+   "name": "GetStreetAddress",
+   "description": "Returns the street address from the given latitude and the longitude.",
+   "params": [
+    {
+     "name": "latitude",
+     "type": "number"
+    },
+    {
+     "name": "longitude",
+     "type": "number"
+    }
+   ],
+   "returnType": "text"
+  },
+  {
+   "deprecated": "false",
+   "name": "Hardware",
+   "description": "Returns the name of the hardware (from the kernel command line or /proc).",
+   "params": [],
+   "returnType": "text"
+  },
+  {
+   "deprecated": "false",
+   "name": "Home",
+   "description": "Returns to the home screen of the application. Your application is not closed.",
+   "params": []
+  },
+  {
+   "deprecated": "false",
+   "name": "Id",
+   "description": "Returns either a changelist number, or a label like M4-rc20.",
+   "params": [],
+   "returnType": "text"
+  },
+  {
+   "deprecated": "false",
+   "name": "InstallationFromAppStore",
+   "description": "Returns the package name of the app that has installled your application.",
+   "params": [],
+   "returnType": "text"
+  },
+  {
+   "deprecated": "false",
+   "name": "InstalledApplications",
+   "description": "Returns a list of all installed applications.",
+   "params": [],
+   "returnType": "list"
+  },
+  {
+   "deprecated": "false",
+   "name": "InternalMemoryAvailable",
+   "description": "Returns the available internal memory in bytes.",
+   "params": [],
+   "returnType": "number"
+  },
+  {
+   "deprecated": "false",
+   "name": "InternalMemoryTotal",
+   "description": "Returns the total internal memory size in bytes.",
+   "params": [],
+   "returnType": "number"
+  },
+  {
+   "deprecated": "false",
+   "name": "InternalMemoryUsed",
+   "description": "Returns the used internal memory in bytes.",
+   "params": [],
+   "returnType": "number"
+  },
+  {
+   "deprecated": "false",
+   "name": "IsAdbDebuggingEnabled",
+   "description": "Checks if ADB debugging is enabled, which might be a sign of hacking your app.",
+   "params": [],
+   "returnType": "boolean"
+  },
+  {
+   "deprecated": "false",
+   "name": "IsAirplaneModeEnabled",
+   "description": "Checks if the airplane mode of the device is on.",
+   "params": [],
+   "returnType": "boolean"
+  },
+  {
+   "deprecated": "false",
+   "name": "IsBatteryPresent",
+   "description": "Indicating whether a battery is present.",
+   "params": [],
+   "returnType": "boolean"
+  },
+  {
+   "deprecated": "false",
+   "name": "IsBluetoothOn",
+   "description": "Returns true if Bluetooth is on, else false.",
+   "params": [],
+   "returnType": "boolean"
+  },
+  {
+   "deprecated": "false",
+   "name": "IsCameraAvailable",
+   "description": "Returns true if the device's camera is available, else false.",
+   "params": [],
+   "returnType": "boolean"
+  },
+  {
+   "deprecated": "false",
+   "name": "IsDarkColor",
+   "description": "Returns true if the color is dark, else it returns false, means the color is light. The result is returned as boolean.",
+   "params": [{
+    "name": "color",
+    "type": "number"
+   }],
+   "returnType": "boolean"
+  },
+  {
+   "deprecated": "false",
+   "name": "IsDateAndTimeAutomatic",
+   "description": "Checks if 'Automatic Date and Time' is enabled in Settings.",
+   "params": [],
+   "returnType": "boolean"
+  },
+  {
+   "deprecated": "false",
+   "name": "IsEmailAddressVaild",
+   "description": "Tests if the email address is valid.",
+   "params": [{
+    "name": "emailAddress",
+    "type": "text"
+   }],
+   "returnType": "boolean"
+  },
+  {
+   "deprecated": "false",
+   "name": "IsEmulator",
+   "description": "Checks if the app is operating on an emulator.",
+   "params": [],
+   "returnType": "boolean"
+  },
+  {
+   "deprecated": "false",
+   "name": "IsExternalMemoryAvailable",
+   "description": "Checks if external memory is available.",
+   "params": [],
+   "returnType": "boolean"
+  },
+  {
+   "deprecated": "false",
+   "name": "IsFlashAvailable",
+   "description": "Returns true if the device has a flashlight, else false.",
+   "params": [],
+   "returnType": "boolean"
+  },
+  {
+   "deprecated": "false",
+   "name": "IsHdrCapable",
+   "description": "Returns whether the screen has a high dynamic rate. This only works in versions larger or Android 8.",
+   "params": [],
+   "returnType": "boolean"
+  },
+  {
+   "deprecated": "false",
+   "name": "IsInstalledFromPlayStore",
+   "description": "Tests if the application is installed from Google Play Store.",
+   "params": [],
+   "returnType": "boolean"
+  },
+  {
+   "deprecated": "false",
+   "name": "IsNightModeActive",
+   "description": "Checks if the night mode of the device is on.",
+   "params": [],
+   "returnType": "boolean"
+  },
+  {
+   "deprecated": "false",
+   "name": "IsScreenRound",
+   "description": "Return whether the screen has a round shape. Apps may choose to change styling based on this property, such as the alignment or layout of text or informational icons.This block requires devices with Android 6 or higher.",
+   "params": [],
+   "returnType": "boolean"
+  },
+  {
+   "deprecated": "false",
+   "name": "IsScreenWideColorGamut",
+   "description": "Return whether the screen has a wide color gamut and wide color gamut rendering is supported by this device. When true, it implies the screen is colorspace aware but not necessarily color-managed. The final colors may still be changed by the screen depending on user settings.",
+   "params": [],
+   "returnType": "boolean"
+  },
+  {
+   "deprecated": "false",
+   "name": "IsSdCardAvailable",
+   "description": "Checks whether the SD card is available.",
+   "params": [],
+   "returnType": "boolean"
+  },
+  {
+   "deprecated": "false",
+   "name": "IsSmsCapable",
+   "description": "Returns true if the current device supports SMS service.",
+   "params": [],
+   "returnType": "boolean"
+  },
+  {
+   "deprecated": "false",
+   "name": "Iso3Country",
+   "description": "Returns a three-letter abbreviation for this locale's country. If the country matches an ISO 3166-1 alpha-2 code, the corresponding ISO 3166-1 alpha-3 uppercase code is returned. If the locale doesn't specify a country, this will be the empty string.",
+   "params": [],
+   "returnType": "text"
+  },
+  {
+   "deprecated": "false",
+   "name": "Iso3Language",
+   "description": "Returns a three-letter abbreviation of this locale's language. If the language matches an ISO 639-1 two-letter code, the corresponding ISO 639-2/T three-letter lowercase code is returned. The ISO 639-2 language codes can be found on-line, see 'Codes for the Representation of Names of Languages Part 2: Alpha-3 Code'. If the locale specifies a three-letter language, the language is returned as is. If the locale does not specify a language the empty string is returned.",
+   "params": [],
+   "returnType": "text"
+  },
+  {
+   "deprecated": "false",
+   "name": "KernelVersion",
+   "description": "Returns the Kernel version of the device.",
+   "params": [],
+   "returnType": "text"
+  },
+  {
+   "deprecated": "false",
+   "name": "LanguageTag",
+   "description": "Returns a well-formed IETF BCP 47 language tag representing this locale.",
+   "params": [],
+   "returnType": "text"
+  },
+  {
+   "deprecated": "false",
+   "name": "Manufacturer",
+   "description": "Returns the manufacturer of the product or hardware.",
+   "params": [],
+   "returnType": "text"
+  },
+  {
+   "deprecated": "false",
+   "name": "MemoryFree",
+   "description": "Returns the available RAM on the device in bytes.",
+   "params": [],
+   "returnType": "number"
+  },
+  {
+   "deprecated": "false",
+   "name": "MemoryTotal",
+   "description": "Returns the total RAM on the device in bytes.",
+   "params": [],
+   "returnType": "number"
+  },
+  {
+   "deprecated": "false",
+   "name": "MemoryUsed",
+   "description": "Returns the used RAM on the device in bytes.",
+   "params": [],
+   "returnType": "number"
+  },
+  {
+   "deprecated": "false",
+   "name": "ModelName",
+   "description": "Returns the name of the device.",
+   "params": [],
+   "returnType": "text"
+  },
+  {
+   "deprecated": "false",
+   "name": "NavigationBarHeight",
+   "description": "Returns the height of the navigation bar of the device.",
+   "params": [],
+   "returnType": "number"
+  },
+  {
+   "deprecated": "false",
+   "name": "NumberOfCameras",
+   "description": "Returns the number of cameras available on the device.",
+   "params": [],
+   "returnType": "number"
+  },
+  {
+   "deprecated": "false",
+   "name": "NumberToString",
+   "description": "Converts a number to a string.",
+   "params": [{
+    "name": "number",
+    "type": "number"
+   }],
+   "returnType": "text"
+  },
+  {
+   "deprecated": "false",
+   "name": "Product",
+   "description": "Returns the name of the overall product.",
+   "params": [],
+   "returnType": "text"
+  },
+  {
+   "deprecated": "false",
+   "name": "SensorAmount",
+   "description": "Returns the total amount of sensors on the device.",
+   "params": [],
+   "returnType": "number"
+  },
+  {
+   "deprecated": "false",
+   "name": "SensorList",
+   "description": "Returns a list of all sensors on the device.",
+   "params": [],
+   "returnType": "list"
+  },
+  {
+   "deprecated": "false",
+   "name": "SetNavigationBarColor",
+   "description": "Resets the navigation bar color to the given color.",
+   "params": [{
+    "name": "color",
+    "type": "number"
+   }]
+  },
+  {
+   "deprecated": "false",
+   "name": "SetStatusBarColor",
+   "description": "Resets the status bar color to the given color.",
+   "params": [{
+    "name": "color",
+    "type": "number"
+   }]
+  },
+  {
+   "deprecated": "false",
+   "name": "SetStatusBarColorDefault",
+   "description": "Sets the status bar color to the default or transparent color.",
+   "params": []
+  },
+  {
+   "deprecated": "false",
+   "name": "SimCountryIso",
+   "description": "Returns the ISO-3166-1 alpha-2 country code equivalent for the SIM provider's country code.",
+   "params": [],
+   "returnType": "text"
+  },
+  {
+   "deprecated": "false",
+   "name": "SimOperator",
+   "description": "Returns the MCC+MNC (mobile country code + mobile network code) of the provider of the SIM. 5 or 6 decimal digits.",
+   "params": [],
+   "returnType": "text"
+  },
+  {
+   "deprecated": "false",
+   "name": "SimOperatorName",
+   "description": "Returns the Service Provider Name (SPN).",
+   "params": [],
+   "returnType": "text"
+  },
+  {
+   "deprecated": "false",
+   "name": "StringToNumber",
+   "description": "Converts a string to a number.",
+   "params": [{
+    "name": "string",
+    "type": "text"
+   }],
+   "returnType": "number"
+  },
+  {
+   "deprecated": "false",
+   "name": "Supported32BitAbis",
+   "description": "Returns a list of 32 bit ABIs supported by this device. The most preferred ABI is the first element in the list.",
+   "params": [],
+   "returnType": "list"
+  },
+  {
+   "deprecated": "false",
+   "name": "Supported64BitAbis",
+   "description": "Returns a list of 64 bit ABIs supported by this device. The most preferred ABI is the first element in the list.",
+   "params": [],
+   "returnType": "list"
+  },
+  {
+   "deprecated": "false",
+   "name": "SupportedAbis",
+   "description": "Returns a list of ABIs supported by this device. The most preferred ABI is the first element in the list.",
+   "params": [],
+   "returnType": "list"
+  },
+  {
+   "deprecated": "false",
+   "name": "Tags",
+   "description": "Returns comma-separated tags describing the build, like 'unsigned,debug'.",
+   "params": [],
+   "returnType": "text"
+  },
+  {
+   "deprecated": "false",
+   "name": "TextToHexadecimal",
+   "description": "Turns a string value into a hexadecimal value.",
+   "params": [{
+    "name": "string",
+    "type": "text"
+   }],
+   "returnType": "text"
+  },
+  {
+   "deprecated": "false",
+   "name": "Time",
+   "description": "The time at which the build was produced, given in milliseconds since the UNIX epoch.",
+   "params": [],
+   "returnType": "number"
+  },
+  {
+   "deprecated": "false",
+   "name": "Type",
+   "description": "Returns the type of build, like 'user' or 'eng'.",
+   "params": [],
+   "returnType": "text"
+  },
+  {
+   "deprecated": "false",
+   "name": "VersionCodeFrom",
+   "description": "Returns the version code from the package name.",
+   "params": [
+    {
+     "name": "packageName",
+     "type": "text"
+    },
+    {
+     "name": "notFound",
+     "type": "text"
+    }
+   ],
+   "returnType": "number"
+  },
+  {
+   "deprecated": "false",
+   "name": "VersionNameFrom",
+   "description": "Returns the version name of an app from the package name.",
+   "params": [
+    {
+     "name": "packageName",
+     "type": "text"
+    },
+    {
+     "name": "notFound",
+     "type": "text"
+    }
+   ],
+   "returnType": "text"
+  }
+ ],
+ "blockProperties": [
+  {
+   "rw": "read-only",
+   "deprecated": "false",
+   "name": "AndroidVersion",
+   "description": "Returns the Android version of the phone.",
+   "type": "text"
+  },
+  {
+   "rw": "read-only",
+   "deprecated": "false",
+   "name": "BaseOS",
+   "description": "Returns the base OS build the product is based on.",
+   "type": "text"
+  },
+  {
+   "rw": "read-only",
+   "deprecated": "false",
+   "name": "BatteryCharging",
+   "description": "Returns true if the device is charging, else false.",
+   "type": "boolean"
+  },
+  {
+   "rw": "read-only",
+   "deprecated": "false",
+   "name": "CpuTemperature",
+   "description": "Returns the CPU temperature of the device.",
+   "type": "number"
+  },
+  {
+   "rw": "read-only",
+   "deprecated": "false",
+   "name": "Incremental",
+   "description": "Returns the internal value used by the underlying source control to represent this build.",
+   "type": "text"
+  },
+  {
+   "rw": "read-only",
+   "deprecated": "false",
+   "name": "IsLocationServiceEnabled",
+   "description": "Returns true if the location services are enabled, else false.",
+   "type": "boolean"
+  },
+  {
+   "rw": "read-only",
+   "deprecated": "false",
+   "name": "Release",
+   "description": "Returns the user-visible version string. E.g., '1.0' or '3.4b5' or 'bananas'. This field is an opaque string. Do not assume that its value has any particular structure or that values of RELEASE from different releases can be somehow ordered.",
+   "type": "text"
+  },
+  {
+   "rw": "read-only",
+   "deprecated": "false",
+   "name": "SdkCodeName",
+   "description": "Returns the current development codename, or the string 'REL' if this is a release build.",
+   "type": "text"
+  },
+  {
+   "rw": "read-only",
+   "deprecated": "false",
+   "name": "SdkVersion",
+   "description": "Returns the SDK version of the software currently running on this hardware device.",
+   "type": "number"
+  },
+  {
+   "rw": "read-only",
+   "deprecated": "false",
+   "name": "SecurityPatch",
+   "description": "Returns the user-visible security patch level. This value represents the date when the device most recently applied a security patch.",
+   "type": "text"
+  }
+ ],
+ "helpUrl": "",
+ "type": "com.gordonlu.device.Device",
+ "androidMinSdk": 7,
+ "version": "23",
+ "external": "true",
+ "showOnPalette": "true",
+ "name": "Device",
+ "helpString": "A non-visible extension that gets some information or parse data of the user's device.<br><br>Made by Gordon Lu (AICODE). For details, read my website: <br><a href='https://sites.google.com/view/appinventor-aicode/my-extensions/device-extension' target='_blank'>https://sites.google.com/view/appinventor-aicode/my-extensions/device-extension<\/a><br>",
+ "properties": [],
+ "events": [{
+  "deprecated": "false",
+  "name": "GotChargingTime",
+  "description": "Triggered when finished calculating the remaining charging time. Returns -1 when an error is occured.",
+  "params": [{
+   "name": "time",
+   "type": "number"
+  }]
+ }]
+}]

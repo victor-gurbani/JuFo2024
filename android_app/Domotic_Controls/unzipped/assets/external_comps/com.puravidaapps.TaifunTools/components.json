@@ -1,0 +1,328 @@
+[{
+ "categoryString": "EXTENSION",
+ "dateBuilt": "2021-01-06T13:41:01-0600",
+ "nonVisible": "true",
+ "iconName": "https://puravidaapps.com/images/taifun16.png",
+ "methods": [
+  {
+   "deprecated": "false",
+   "name": "ApiLevel",
+   "description": "API Level.",
+   "params": [],
+   "returnType": "number"
+  },
+  {
+   "deprecated": "false",
+   "name": "ApplicationSpecificDirectory",
+   "description": "Returns the application specific directory you can use to write files without having WRITE_EXTERNAL_STORAGE permission.",
+   "params": [],
+   "returnType": "text"
+  },
+  {
+   "deprecated": "false",
+   "name": "Base64Encode",
+   "description": "Base64 encode a string. Precondition to use this block: Min Android Version of the app must be 8!",
+   "params": [{
+    "name": "string",
+    "type": "text"
+   }],
+   "returnType": "text"
+  },
+  {
+   "deprecated": "false",
+   "name": "ClearAppData",
+   "description": "Clear the app data of the current app. Returns true if clearing was successful, else false.",
+   "params": [],
+   "returnType": "boolean"
+  },
+  {
+   "deprecated": "false",
+   "name": "ClearCache",
+   "description": "Clear the cache of the current app. Returns true if clearing was successful, else false.",
+   "params": [],
+   "returnType": "boolean"
+  },
+  {
+   "deprecated": "false",
+   "name": "Density",
+   "description": "Returns the density of the device.",
+   "params": [],
+   "returnType": "number"
+  },
+  {
+   "deprecated": "false",
+   "name": "DontKeepScreenOn",
+   "description": "Remove the KeepScreenOn flag.",
+   "params": []
+  },
+  {
+   "deprecated": "false",
+   "name": "EmailAddressIsValid",
+   "description": "Returns true, if it is a valid email address, else false.",
+   "params": [{
+    "name": "emailAddress",
+    "type": "text"
+   }],
+   "returnType": "boolean"
+  },
+  {
+   "deprecated": "false",
+   "name": "GalleryRefresh",
+   "description": "Gallery Refresh for a specific filename.",
+   "params": [{
+    "name": "fileName",
+    "type": "text"
+   }],
+   "returnType": "text"
+  },
+  {
+   "deprecated": "false",
+   "name": "HideContent",
+   "description": "Hide content, i.e. enable content to move behind status and navigation bar.",
+   "params": []
+  },
+  {
+   "deprecated": "false",
+   "name": "HideSystemUI",
+   "description": "Hide the system user interface",
+   "params": []
+  },
+  {
+   "deprecated": "false",
+   "name": "HmacSha1",
+   "description": "Returns a base64 encoded HMAC SHA1 hash. Precondition to use this block: Min Android Version of the app must be 8!",
+   "params": [
+    {
+     "name": "message",
+     "type": "text"
+    },
+    {
+     "name": "key",
+     "type": "text"
+    }
+   ],
+   "returnType": "text"
+  },
+  {
+   "deprecated": "false",
+   "name": "HmacSha256",
+   "description": "Returns a base64 encoded HMAC SHA256 hash. Precondition to use this block: Min Android Version of the app must be 8!",
+   "params": [
+    {
+     "name": "message",
+     "type": "text"
+    },
+    {
+     "name": "key",
+     "type": "text"
+    }
+   ],
+   "returnType": "text"
+  },
+  {
+   "deprecated": "false",
+   "name": "IsDevelopment",
+   "description": "Returns true, if app is running in development mode (using the companion app), else returns false.",
+   "params": [],
+   "returnType": "boolean"
+  },
+  {
+   "deprecated": "false",
+   "name": "KeepScreenOn",
+   "description": "As long as this window is visible to the user, keep the device's screen turned on and bright.",
+   "params": []
+  },
+  {
+   "deprecated": "false",
+   "name": "Matches",
+   "description": "returns true, if string matches a regular expression, else false",
+   "params": [
+    {
+     "name": "string",
+     "type": "text"
+    },
+    {
+     "name": "regex",
+     "type": "text"
+    }
+   ],
+   "returnType": "boolean"
+  },
+  {
+   "deprecated": "false",
+   "name": "PackageName",
+   "description": "Returns the package name of the app.",
+   "params": [],
+   "returnType": "text"
+  },
+  {
+   "deprecated": "false",
+   "name": "PathToAssets",
+   "description": "Returns the path to the assets. This method is useful, if you want to access files from the webviewer component stored in the assets of the app. The method will return 'file:///android_asset/' in case the app is running after building the app as apk file. For the companion app there can be returned 3 different values: file:///storage/emulated/0/Android/data/<packageName>/files/assets/ for devices >= Android 10, file:///storage/emulated/0/AppInventor/assets/' for the App Inventor companion app and < Android 10, file:///storage/emulated/0/Makeroid/assets/' for the Kodular (formerly Makeroid) companion app and < Android 10.",
+   "params": [],
+   "returnType": "text"
+  },
+  {
+   "deprecated": "false",
+   "name": "SensorList",
+   "description": "Returns a list of available sensors",
+   "params": [],
+   "returnType": "any"
+  },
+  {
+   "deprecated": "false",
+   "name": "Sha256",
+   "description": "Returns a Sha256 hash of a given string.",
+   "params": [{
+    "name": "string",
+    "type": "text"
+   }],
+   "returnType": "text"
+  },
+  {
+   "deprecated": "false",
+   "name": "ShowKeyboard",
+   "description": "Show the keyboard",
+   "params": []
+  },
+  {
+   "deprecated": "false",
+   "name": "ShowSystemUI",
+   "description": "Show the system user interface",
+   "params": []
+  },
+  {
+   "deprecated": "false",
+   "name": "VersionCode",
+   "description": "Returns the version code of the app",
+   "params": [],
+   "returnType": "number"
+  },
+  {
+   "deprecated": "false",
+   "name": "VersionName",
+   "description": "Returns the version name of the app",
+   "params": [],
+   "returnType": "text"
+  },
+  {
+   "deprecated": "false",
+   "name": "Xor",
+   "description": "Exclusive or for boolean: returns true only when inputs differ (one is true, the other is false).",
+   "params": [
+    {
+     "name": "a",
+     "type": "boolean"
+    },
+    {
+     "name": "b",
+     "type": "boolean"
+    }
+   ],
+   "returnType": "boolean"
+  },
+  {
+   "deprecated": "false",
+   "name": "XorHex",
+   "description": "Exclusive or for hex strings, returns hex result. Strings must have the same length.",
+   "params": [
+    {
+     "name": "a",
+     "type": "text"
+    },
+    {
+     "name": "b",
+     "type": "text"
+    }
+   ],
+   "returnType": "text"
+  }
+ ],
+ "blockProperties": [
+  {
+   "rw": "read-only",
+   "deprecated": "false",
+   "name": "Country",
+   "description": "Returns the country/region code of the current Locale, which should either be the empty string, an uppercase ISO 3166 2-letter code, or a UN M.49 3-digit code. A Locale object represents a specific geographical, political, or cultural region.",
+   "type": "text"
+  },
+  {
+   "rw": "read-only",
+   "deprecated": "false",
+   "name": "Language",
+   "description": "Returns the language code of the current Locale. A Locale object represents a specific geographical, political, or cultural region.",
+   "type": "text"
+  },
+  {
+   "rw": "write-only",
+   "deprecated": "false",
+   "name": "NavigationBarColor",
+   "description": "Set navigation bar color. This will work starting from API Level 21 (Android Lollipop",
+   "type": "number"
+  },
+  {
+   "rw": "write-only",
+   "deprecated": "false",
+   "name": "StatusBarColor",
+   "description": "Set status bar color. This will work starting from API Level 21 (Android Lollipop",
+   "type": "number"
+  },
+  {
+   "rw": "read-write",
+   "deprecated": "false",
+   "name": "SuppressWarnings",
+   "description": "whether Warnings should be suppressed",
+   "type": "boolean"
+  },
+  {
+   "rw": "write-only",
+   "deprecated": "false",
+   "name": "TitleColor",
+   "description": "Set title color.",
+   "type": "number"
+  }
+ ],
+ "helpUrl": "https://puravidaapps.com/tools.php",
+ "type": "com.puravidaapps.TaifunTools",
+ "androidMinSdk": 7,
+ "version": "21",
+ "external": "true",
+ "showOnPalette": "true",
+ "name": "TaifunTools",
+ "helpString": "A collection of several tools, which do not need additional permissions. Version 21a as of 2021-01-06.",
+ "properties": [
+  {
+   "defaultValue": "&H00FFFFFF",
+   "name": "NavigationBarColor",
+   "editorArgs": [],
+   "editorType": "color"
+  },
+  {
+   "defaultValue": "&H00FFFFFF",
+   "name": "StatusBarColor",
+   "editorArgs": [],
+   "editorType": "color"
+  },
+  {
+   "defaultValue": "false",
+   "name": "SuppressWarnings",
+   "editorArgs": [],
+   "editorType": "boolean"
+  },
+  {
+   "defaultValue": "&H00FFFFFF",
+   "name": "TitleColor",
+   "editorArgs": [],
+   "editorType": "color"
+  }
+ ],
+ "events": [{
+  "deprecated": "false",
+  "name": "ActivityStateChanged",
+  "description": "Event indicating that the state of the activity changed.Possible values are pause, stop, resume. See also the activity lifecycle here http://developer.android.com/reference/android/app/Activity.html#ActivityLifecycle",
+  "params": [{
+   "name": "state",
+   "type": "text"
+  }]
+ }]
+}]

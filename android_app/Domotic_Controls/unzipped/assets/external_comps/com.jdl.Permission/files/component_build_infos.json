@@ -1,0 +1,1 @@
+[{"assets":[],"native":[],"permissions":[],"activities":["<activity android:name=\"com.jdl.Permission.classPermissions\" android:theme=\"@android:style/Theme.Translucent.NoTitleBar\">\n    <\/activity>\n"],"broadcastReceivers":[],"broadcastReceiver":[],"libraries":[],"type":"com.jdl.Permission.listPermission","androidMinSdk":["7"]}]

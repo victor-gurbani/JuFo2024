@@ -1,0 +1,92 @@
+[{
+ "categoryString": "EXTENSION",
+ "dateBuilt": "2020-05-25T10:43:45-0300",
+ "nonVisible": "true",
+ "iconName": "aiwebres/imagePermission.png",
+ "methods": [
+  {
+   "deprecated": "false",
+   "name": "CheckGarantedAll",
+   "description": "When Verifying that all the permissions mentioned in the list have been allowed, it will return true or false.",
+   "params": [{
+    "name": "listPermissions",
+    "type": "list"
+   }],
+   "returnType": "boolean"
+  },
+  {
+   "deprecated": "false",
+   "name": "CheckMultiplePermissions",
+   "description": "Parses a whitelist and returns an event (ResultCheckMultiplePermission) with a denied and allowed whitelist.",
+   "params": [{
+    "name": "listPermissions",
+    "type": "list"
+   }]
+  },
+  {
+   "deprecated": "false",
+   "name": "CheckSinglePermission",
+   "description": "Checks whether the mentioned permission has been granted, it will return true or false.",
+   "params": [{
+    "name": "permission",
+    "type": "text"
+   }],
+   "returnType": "boolean"
+  },
+  {
+   "deprecated": "false",
+   "name": "RequestPermission",
+   "description": "In a list of permissions, a window will open for the user, whether or not to allow permissions that have not been granted.",
+   "params": [{
+    "name": "listPermissions",
+    "type": "list"
+   }]
+  }
+ ],
+ "blockProperties": [],
+ "helpUrl": "https://github.com/jarlisson2/ListPermissionAIX",
+ "type": "com.jdl.Permission.listPermission",
+ "androidMinSdk": 7,
+ "version": "2",
+ "external": "true",
+ "showOnPalette": "true",
+ "name": "listPermission",
+ "helpString": "Request list permission <br> Developed by Jarlisson",
+ "properties": [],
+ "events": [
+  {
+   "deprecated": "false",
+   "name": "OnPermissionRequest",
+   "description": "RequestListPermission result.",
+   "params": [
+    {
+     "name": "listPermissionsGrated",
+     "type": "list"
+    },
+    {
+     "name": "listPermissionsDanied",
+     "type": "list"
+    },
+    {
+     "name": "grantedAll",
+     "type": "boolean"
+    }
+   ]
+  },
+  {
+   "deprecated": "false",
+   "name": "ResultCheckMultiplePermissions",
+   "description": "CheckMultiplePermission result.",
+   "params": [
+    {
+     "name": "listPermissionsGrated",
+     "type": "list"
+    },
+    {
+     "name": "listPermissionsDanied",
+     "type": "list"
+    }
+   ]
+  }
+ ]
+}]
