@@ -50,9 +50,9 @@ const int analogPin = A0;
 const int pwmPin = 10;
 
 // to check if BT is connected
-// int bluetoothStatePin = 11? // TODO
+int bluetoothStatePin = 11; // TODO: done
 const int TotalVentanas = 4;
-int VentanaPin[TotalVentanas] = { 2, 4, 5, 7 };
+int VentanaPin[TotalVentanas] = { 2, 4, 34, 7 };
 //freepins 3 6 8  11
 //usedpins 0 1 2 4 5 9 10 12 13 A0
 bool VentanaState[TotalVentanas] = { false, false, false, false };
@@ -71,7 +71,7 @@ int current_angle = 42;
 unsigned long last_used;
 
 
-float interval = 0.2;
+float interval = 0.01;
 
 int co2;
 
@@ -100,7 +100,7 @@ int ppmhora[9] = { 900, 800, 600, 850, 800, 600, 800 };
 //slider threshold +-10%
 char SerialChar;
 int ControlInt;                                // multi-purpose int to read from serial
-bool AllowedSource[3] = { false, true, false };  // analog, PWM, Uart 
+bool AllowedSource[3] = { false, true, false };  // analog, PWM, Uart
 
 // START NEW CODE
 //freepins 8  11
@@ -178,6 +178,8 @@ void setup() {
 
   pinMode(motionSensorPin, INPUT);
   
+  // Initialise random seed
+  randomSeed(analogRead(0));
 
   //delay(180000); // preheat the CO2 sensor for 3 minutes
   delay(1000);
@@ -189,7 +191,7 @@ void checkWiFiSerial() {
     while (Serial3.available()) {
       // Lectura de datos del Serial3
       char inChar = Serial3.read();
-       SerialJSON("ESPdataredcieved", &Serial2);
+      //  SerialJSON("ESPdataredcieved", &Serial2);
       processCommand(inChar, &Serial3);
       /*
       inString += inChar;
@@ -214,6 +216,30 @@ void checkWiFiSerial() {
 int ppm_uart = 0;
 int ppm_PWM = 0;
 int ppm_analog = 0;
+int main_ppm;
+void refreshCO2val() { 
+    if (AllowedSource[2]) {
+      //  Serial2.println("reading uart...");
+      ppm_uart = gas_concentration_uart();
+    } else {
+      ppm_uart = 0;
+    }
+
+    //  Serial2.println("reading pwm..."); //not working
+    if (AllowedSource[1]) {
+      ppm_PWM = gas_concentration_PWM();
+    } else {
+      ppm_PWM = 0;
+    }
+
+    if (AllowedSource[0]) {
+      //  Serial2.println("reading analog..."); //not accurate
+      ppm_analog = get_analog();
+    } else {
+      ppm_analog = 0;
+    }
+    main_ppm = (ppm_PWM != 0) ? ppm_PWM : ppm_uart;
+  } 
 
 void loop() {
   // Serial2.println("true1");
@@ -227,11 +253,10 @@ void loop() {
     LightSensorState[i] = analogRead(LightSensorPin[i]);
   }
   motionSensorState = digitalRead(motionSensorPin);
-  if(motionSensorState && millis() - lastMotion > 20000 /*&& (!digitalRead(bluetoothStatePin))*/) {
+  if(motionSensorState && millis() - lastMotion > 10000 && (!digitalRead(bluetoothStatePin))) {
     // saliste de casa y llevas 20 segundos fuera sin movimiento y no hay nadie cerca(conectado)
-    // TODO connect HC05 state pin
-    
-    // alertNewPerson(); // envia push a dispositivos y ya verán si hay alguien en casa
+    // TODO connect HC05 state pin: done
+    alertNewPerson(); // envia push a dispositivos y ya verán si hay alguien en casa
   }
   lastMotion = motionSensorState ? millis() : lastMotion;
 
@@ -243,28 +268,9 @@ void loop() {
   //  Serial2.print(VentanaState[2]);
   //  Serial2.println("<-- Ventana 3");
   //
-
-  if (AllowedSource[2]) {
-    //  Serial2.println("reading uart...");
-    ppm_uart = gas_concentration_uart();
-  } else {
-    ppm_uart = 0;
-  }
-
-  //  Serial2.println("reading pwm..."); //not working
-  if (AllowedSource[1]) {
-    ppm_PWM = gas_concentration_PWM();
-  } else {
-    ppm_PWM = 0;
-  }
-
-  if (AllowedSource[0]) {
-    //  Serial2.println("reading analog..."); //not accurate
-    ppm_analog = get_analog();
-  } else {
-    ppm_analog = 0;
-  }
-
+  // if(random(1, 1000) > 600) {
+    refreshCO2val();  
+  // }
   /* Print Serial Info
   //  Serial2.print(ppm_uart);
   //  Serial2.println(" <-- UART");
@@ -282,27 +288,26 @@ void loop() {
 
   // automatic opening
   // Serial2.println(TotalVentanas / 2);
-  int main_ppm = (ppm_PWM != 0) ? ppm_PWM : ppm_uart;
 
   if (main_ppm > /*ppmhora[hora]*/ 1000 * threshold / 100) {  // cambiar entre (desde app) 80% y 120% (40-60*2)
     //Serial2.println(current_angle);
-    if (number_of_closed >= TotalVentanas / 2 && millis() - last_used > 3000 && current_angle != 1200) {
-      SerialJSON("Open Windows", &Serial2);
+    if (number_of_closed >= TotalVentanas / 2 && millis() - last_used > 3000 && current_angle != 1750) {
+      // SerialJSON("Open Windows", &Serial2);
       if (motorAllowed) {
-        for (current_angle = 1750; current_angle > 1200; current_angle -= 1) {
+        for (current_angle = 1200; current_angle < 1750; current_angle += 1) {
           myservo.write(current_angle);
           delay(5);
         }
-        // current_angle = 90;
+        //current_angle = 0;
         last_used = millis();
       }
       //abrir ventanas
     }
   } else {
-    if (/*number_of_closed < TotalVentanas / 2 && */ millis() - last_used > 3000 && current_angle != 1750) {
-      SerialJSON("Close Windows", &Serial2);
+    if (/*number_of_closed < TotalVentanas / 2 && */ millis() - last_used > 3000 && current_angle != 1200) {
+      // SerialJSON("Close Windows", &Serial2);
       if (motorAllowed) {
-        for (current_angle = 1200; current_angle < 1750; current_angle += 1) {
+        for (current_angle = 1750; current_angle > 1200; current_angle -= 1) {
           myservo.write(current_angle);
           delay(5);
         }
@@ -378,12 +383,14 @@ void loop() {
    *  2 - Wrong Info
    */
   if (Serial2.available()) {
-    SerialChar = Serial2.read();
-    processCommand(SerialChar, &Serial2);
-    // Serial2.println("--------------------");
-    // Serial2.println(SerialChar);
-    
-    // Serial2.println("--------------------");
+    while(Serial2.available()) { 
+      SerialChar = Serial2.read();
+      processCommand(SerialChar, &Serial2);
+      // Serial2.println("--------------------");
+      // Serial2.println(SerialChar);
+      
+      // Serial2.println("--------------------");
+    }
   }
   checkWiFiSerial();
 }
@@ -458,15 +465,15 @@ void processCommand(char SerialChar, Stream *selectedSerial) {
           ControlInt = (bool)ControlInt;
           // selectedSerial->println(ControlInt);
           if (ControlInt) {
-            if (current_angle != 1200) {
-              for (current_angle = 1750; current_angle > 1200; current_angle -= 1) {
+            if (current_angle != 1750) {
+              for (current_angle = 1200; current_angle < 1750; current_angle += 1) {
                 myservo.write(current_angle);
                 delay(2);
               }
             }
           } else {
-            if (current_angle != 1750) {
-              for (current_angle = 1200; current_angle < 1750; current_angle += 1) {
+            if (current_angle != 1200) {
+              for (current_angle = 1750; current_angle > 1200; current_angle -= 1) {
                 myservo.write(current_angle);
                 delay(2);
               }
@@ -569,20 +576,21 @@ void SerialJSON(String message, Stream *selectedSerial) {
   String concatLS = toJSON(LightSensorState, TotalLightSensors);
   String JSONdata = 
   (
-    "{\"ppm_a\": " + String(ppm_analog) 
-  + ",\"ppm_u\": " + String(ppm_uart) 
-  + ",\"ppm_p\": " + String(ppm_PWM) 
-  + ",\"windows\": " + concatV 
-  + ",\"threshold\": " + threshold 
-  + ",\"servoangle\": " + current_angle 
-  + ",\"motorAllowed\": " + motorAllowed 
-  + ",\"millis\": " + millis() 
-  + ",\"lights\": " + concatL
-  + ",\"lightSensors\": " + concatLS
-  + ",\"lightAllowed\": " + lightAllowed 
-  + ",\"lastMotionDelta\": " + (millis() - lastMotion) 
-  + ",\"lightThreshold\": " + lightThreshold 
-  + ",\"message\": \"" + message + "\"}"
+    "{\"ppm_a\":" + String(ppm_analog) 
+  + ",\"ppm_u\":" + String(ppm_uart) 
+  + ",\"ppm_p\":" + String(ppm_PWM) 
+  + ",\"windows\":" + concatV 
+  + ",\"threshold\":" + threshold 
+  + ",\"servoangle\":" + current_angle 
+  + ",\"motorAllowed\":" + motorAllowed 
+  + ",\"mls\":" + millis() 
+  + ",\"lights\":" + concatL
+  + ",\"lightSensors\":" + concatLS
+  + ",\"lightAllowed\":" + lightAllowed 
+  + ",\"lastMotionD\":" + (millis() - lastMotion) 
+  + ",\"lightThreshold\":" + lightThreshold 
+  + ",\"BTsts\":" + digitalRead(bluetoothStatePin) 
+  + ",\"message\":\"" + message + "\"}"
   );
   selectedSerial->print(JSONdata);
 
@@ -663,7 +671,7 @@ int gas_concentration_PWM() {
     //      return 0;
     //    }
   }
-  delay(10);
+  // delay(10);
 
   return int(ppm);
 }
@@ -688,28 +696,14 @@ String toJSONbool(bool arr[], int arrSize) {
   JSONresult += "]";
   return JSONresult;
 }
-
+long long int lastAlerted = millis();
 void alertNewPerson() {
-  /* use serial to connet to esp to tell it to 
-  HTTPClient http;
+  /* use serial to connet to esp to tell it to ESP */
+  if (millis() - lastAlerted > 5000) { // alert every 5 sec
   
-  http.begin(webhookURL);
-  http.addHeader("Content-Type", "application/json");
-
-  String payload = "{\"username\": \"test\", \"content\": \"hello\"}";
-  
-  int httpResponseCode = http.POST(payload);
-  
-  if (httpResponseCode > 0) {
-    Serial2.print("Webhook message sent. Response code: ");
-    Serial2.println(httpResponseCode);
-  } else {
-    Serial2.print("Error sending webhook message. Error code: ");
-    Serial2.println(httpResponseCode);
+    Serial3.print("a");
+    lastAlerted = millis();
   }
-  
-  http.end();
-  */
 }
 
 // END NEW CODE
