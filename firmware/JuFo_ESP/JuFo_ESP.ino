@@ -3,20 +3,27 @@
 // use TXD0
 // I think 1,2 ON for AT mode
 // WIFI here
+
+
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
+#include <ESP8266HTTPClient.h>
 #include <ESP8266WebServer.h>
 #include <ESP8266mDNS.h>
 #include <AutoConnect.h>
+#include <WiFiClientSecure.h>
 
-const char* ssid = "asdf";
-const char* pass = "00000000";
+const char* ssid = "VGurbani";
+const char* pass = "JuFo2024";
 const char* host = "";
 const uint16_t port = 80;
 
 bool useHotSpot = false;
 IPAddress myIP;
 ESP8266WebServer server(80);
+WiFiClientSecure client;
+
+
 // MDNSResponder mdns;
 void handle_NotFound(){
   // no clue what they sent
@@ -35,13 +42,39 @@ void handle_NotFound(){
 
   server.send(404, "text/plain", message);
 }
+void alertNewPerson(String discordMsg) {
+  HTTPClient http;
+  
+  http.begin(client, "REDACTED_DISCORD_WEBHOOK");
+  http.addHeader("Content-Type", "application/json");
+
+  String payload = "{\"username\": \"YOUR HOME\", \"content\": \""+discordMsg+ "\", \"tts\":true }";
+  
+  int httpResponseCode = http.POST(payload);
+  
+  if (httpResponseCode > 0) {
+    // Serial2.print("Webhook message sent. Response code: ");
+    // Serial2.println(httpResponseCode);
+    if (httpResponseCode == HTTP_CODE_OK || httpResponseCode == HTTP_CODE_MOVED_PERMANENTLY) { // Todo OK
+      // String payload = https.getString();
+      // Serial.print("[HTTP] Response: ");
+      // Serial.println(payload);
+    } 
+  } else {
+    // Serial2.print("Error sending webhook message. Error code: ");
+    // Serial2.println(httpResponseCode);
+    // Serial2.println(https.errorToString(httpResponseCode).c_str());
+  }
+  http.end();
+}
 void setup() {
+  
 
   Serial.begin(115200);
   while (!Serial) {
     ; // wait for serial port to connect. Needed for native USB port only
   }
-
+  client.setInsecure();
   if(!useHotSpot) {
     WiFi.mode(WIFI_STA);
     // esp_wifi_set_ps(WIFI_PS_NONE);
@@ -51,13 +84,14 @@ void setup() {
     // Serial.println(WiFi.status() == WL_CONNECTED); 
     while(WiFi.status() != WL_CONNECTED) {
       // Serial.print(".");
-      delay(100);
+      delay(80);
     }
     myIP = WiFi.localIP();
   } else {
     WiFi.softAP("JuFo Victor Gurbani", "LichtKontrolle"); 
     myIP = WiFi.softAPIP();
   }
+  alertNewPerson("House is turning on... ");
   if (MDNS.begin("varfield"/*/, WiFi.localIP()/*/)) {
     // Serial.print("MDNS responder started for ");
     // Serial.println(myIP);
@@ -79,7 +113,12 @@ void setup() {
     delay(10);
   });
   server.on("/get", [](){
+    // server.setContentLength(CONTENT_LENGTH_UNKNOWN);
+    // server.sendHeader("Transfer-Encoding", "chunked");
     server.sendHeader("Access-Control-Allow-Origin", "*");
+    // server.sendHeader("Content-Type", "text/json");
+    // server.send(200);
+
     Serial.print("j");
     int limitTime = 0;
     bool getWorked = true;
@@ -91,17 +130,27 @@ void setup() {
       }
     }
     if(!getWorked) {
-      server.send(200, "text/json", "{error}");
+      server.send(200, "", "{error}");
     } else {
-      delay(200); // wait for finish buffering
-      String webPage = "";
-      while (Serial.available()) {
-      
+      delay(150); // wait for finish buffering
+      String webPage = ""; // TODO ver pq se come el primer byte
+      // server.streamFile(Serial);
+      // Stream data from Serial to client
+      // while (Serial.available()) {
+      //   char c = Serial.read();
+      //   server.sendContent(String(c));
+      // }
+      // server.sendContent(""); 
+      while (Serial.available()) { // TODO antes era while
         char inChar = Serial.read();
-        webPage += inChar;
+        // String webp = "";
+        // webp += inChar;
+        // server.send(200, "", webp);
+        // webPage += Serial.read();
+        webPage += Serial.readStringUntil('}');
       }
       
-      server.send(200, "text/json", webPage);
+      server.send(200, "text/json", '{' + webPage + '}');
     }
     delay(10);
   });
@@ -127,219 +176,38 @@ void setup() {
 
   MDNS.addService("http", "tcp", 80);
 
+
+  alertNewPerson("House is ON ");
 }
 
 void loop() {
   MDNS.update();
   server.handleClient();
-}
-  /*
-   *
-   * 
-   * g = get
-   *  a = analog
-   *  p = PWM
-   *  u = UART
-   *  l = lights as JSON array{[]}
-   *  m = time since last motion in ms
-   * s = set
-   *  a = analog
-   *  p = PWM
-   *  u = UART
-   *  m = motor (automatic Window opening)
-   *    1 = ON (use)
-   *    0 = OFF (do not use)
-   * m = set motor
-   *   1 = ON (use)
-   *   0 = OFF (do not use)
-   * l = set light
-   *  n = lightPin
-   *   1 = ON
-   *   0 = OFF
-   * a = allowed sources
-   * t = threshold
-   *  [1-99] = number (suggested max 40-60%) // 50 is normal
-   *  
-   * w = windows
-   *  [0-TotalWindows] = window id 
-   *    returns 0 or 1
-   *    
-   * e = errorcodes
-   * 
-   *  ERROR CODES:
-   *  1 - Missing Info
-   *  2 - Wrong Info
-   * 
-  if (Serial.available()) {
-    SerialChar = Serial.read();
-    // Serial.println("--------------------");
-    // Serial.println(SerialChar);
-    switch (SerialChar) {
-      case 'h':
-        Serial.println("help menu");
-        break;
-      case 'g':  // get
-        if (Serial.available()) {
-          SerialChar = Serial.read();
-          // Serial.println(SerialChar);
-          if (SerialChar == 'a') {
-            Serial.println(ppm_analog);
-          } else if (SerialChar == 'p') {
-            Serial.println(ppm_PWM);
-          } else if (SerialChar == 'u') {
-            Serial.println(ppm_uart);
-          } else if (SerialChar == 'l') {
-            Serial.println("{ " + toJSON(LightSensorState, TotalLightSensors) + " }");
-          } else if (SerialChar == 'm') {
-            Serial.println(millis() - lastMotion);
-          } else {
-            Serial.println("ERROR (Code: 2)");
-          }
-        } else {
-          Serial.println("ERROR (Code: 1)");
-        }
-        break;
-      case 's':  // set
-        if (Serial.available()) {
-          SerialChar = Serial.read();
-          //Serial.println(SerialChar);
-          if (Serial.available()) {
-            ControlInt = Serial.read() - 48;
-            ControlInt = (bool)ControlInt;
-            // Serial.println(ControlInt);
-          } else {
-            Serial.println("ERROR (Code: 1)");
-          }
-          if (SerialChar == 'a') {
-            AllowedSource[0] = ControlInt;
-          } else if (SerialChar == 'p') {
-            AllowedSource[1] = ControlInt;
-          } else if (SerialChar == 'u') {
-            AllowedSource[2] = ControlInt;
-          } else if (SerialChar == 'm') {
-            motorAllowed = ControlInt;
-          } else {
-            Serial.println("ERROR (Code: 2)");
-            break;
-          }
-          SerialJSON("OK");
-        } else {
-          Serial.println("ERROR (Code: 1)");
-        }
-        break;
-      case 'm':  // use servo/motor 1 open:
-                 //      if (Serial.available()) {
-                 //           ControlInt = Serial.read() - 48;
-                 //           ControlInt = (bool)ControlInt;
-                 //           Serial.println(ControlInt);
-                 //           motorAllowed = ControlInt;
-                 //           Serial.println("OK");
-                 //         } else {
-                 //           Serial.println("ERROR (Code: 1)");
-                 //         }
-        if (Serial.available()) {
-          ControlInt = Serial.read() - 48;
-          ControlInt = (bool)ControlInt;
-          // Serial.println(ControlInt);
-          if (ControlInt) {
-            if (current_angle != 1200) {
-              for (current_angle = 1750; current_angle > 1200; current_angle -= 1) {
-                myservo.write(current_angle);
-                delay(2);
-              }
-            }
-          } else {
-            if (current_angle != 1750) {
-              for (current_angle = 1200; current_angle < 1750; current_angle += 1) {
-                myservo.write(current_angle);
-                delay(2);
-              }
-            }
-          }
-          last_used = millis();
-          SerialJSON("OK");
-        } else {
-          Serial.println("ERROR (Code: 1)");
-        }
-        break;
-      case 'l':
-        if (Serial.available()) {
-          int ChosenLight = (int)Serial.read();
-          if (Serial.available()) {
-            ControlInt = Serial.read() - 48;
-            ControlInt = (bool)ControlInt;
-            // Serial.println(ControlInt);
-            if(ChosenLight < TotalLights) {
-              digitalWrite(ChosenLight, ControlInt ? HIGH : LOW);            
-            } else {
-              Serial.println("ERROR (Code: 2)");
-            }
-            SerialJSON("OK");
-          } else {
-            Serial.println("ERROR (Code: 1)");
-          }
-        } else {
-          Serial.println("ERROR (Code: 1)");
-        }
-        break;
-      case 'a':
-        Serial.print("Analog ");
-        Serial.println(AllowedSource[0]);
-        Serial.print("PWM ");
-        Serial.println(AllowedSource[1]);
-        Serial.print("UART ");
-        Serial.println(AllowedSource[2]);
-        break;
-      case 't':  // threshold between 40-60% (d = default)
-        if (!Serial.available()) {
-          Serial.println("ERROR (Code: 1)");
-        } else {
-          SerialChar = Serial.read();
-          if (SerialChar == 'd') {
-            threshold = 100;  // in %
-          } else {
-            int n1 = (int)(SerialChar - 48);
-            int n2;
-            if (Serial.available()) {
-              SerialChar = Serial.read();  //warning NL and CR (ASCII 10,13)
-              n2 = (int)(SerialChar - 48);
-            } else {
-              Serial.println("ERROR (Code: 1)");
-              break;
-            }
 
-            threshold = (n1 * 10 + n2) * 2;  // los numeros son * 2 pq 50 son 100
-          }
-        }
-        //Serial.println(threshold);
-        break;
-      case 'w':
-        if (Serial.available())
-          ControlInt = (int)Serial.read();
-        else {
-          Serial.println("ERROR (Code: 1)");
-          break;
-        }
-        if (ControlInt <= TotalVentanas)
-          Serial.println(VentanaState[ControlInt]);
-        else
-          Serial.println("ERROR (Code: 2)");
-        break;
-      case 'e':
-        Serial.println("1 - Missing Info\n2 - Wrong Info");
-        break;
-      case 'j':
-        SerialJSON("");
-        break;
-      default:  // anything else
-        // Serial.println("ERROR WTF");
-        break;
+  // alert Dsc
+  if(Serial.available()) {
+    // delay(800); // wait to recieve and check if not server
+    // String msg = "";  
+    // while (Serial.available()) {
+    //   // char inChar = Serial.read();
+    //   // char inChar = "a";
+    //   // msg += inChar;
+    //   msg = "";
+    //   if(msg == "alarm") {
+    //     alertNewPerson("Intruder Detected!");
+    //   }
+    // }
+    if(Serial.read() == 'a') {
+      alertNewPerson("Intruder Detected!");
     }
-    // Serial.println("--------------------");
+    
   }
 }
 
-void httpReq() {
+
+  
+
+/* void httpReq() {
   // Send and store data
   HTTPClient http;
   
@@ -357,9 +225,9 @@ void httpReq() {
   }
   
   http.end();
-} 
+} */
 
-void alertNewPerson() {
+/* void alertNewPerson() {
   HTTPClient http;
   
   http.begin(webhookURL);
@@ -370,16 +238,16 @@ void alertNewPerson() {
   int httpResponseCode = http.POST(payload);
   
   if (httpResponseCode > 0) {
-    Serial.print("Webhook message sent. Response code: ");
+    // Serial.print("Webhook message sent. Response code: ");
     Serial.println(httpResponseCode);
   } else {
-    Serial.print("Error sending webhook message. Error code: ");
+    // Serial.print("Error sending webhook message. Error code: ");
     Serial.println(httpResponseCode);
   }
   
   http.end();
 }
-
+*/ 
 // END NEW CODE
 
 
