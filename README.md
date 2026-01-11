@@ -180,5 +180,5 @@ void alertNewPerson(String discordMsg) {
 
 ---
 
-*Authored by Victor Gurbani | 2022-2024*
+*Authored by [Victor Gurbani](https://github.com/victor-gurbani) | 2022-2024*
 
